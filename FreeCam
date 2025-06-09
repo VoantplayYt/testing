@@ -1,0 +1,114 @@
+-- LocalScript: FreeCam with GUI Button Toggle
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+
+-- Create a toggle button GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "FreeCamGUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+local toggleButton = Instance.new("TextButton")
+toggleButton.Size = UDim2.new(0, 120, 0, 40)
+toggleButton.Position = UDim2.new(0, 20, 0, 20)
+toggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+toggleButton.TextColor3 = Color3.new(1, 1, 1)
+toggleButton.Text = "Toggle FreeCam"
+toggleButton.Parent = screenGui
+
+-- FreeCam State
+local enabled = false
+local camCF = camera.CFrame
+local rotation = Vector2.new()
+local moveVec = Vector3.zero
+local speed = 1
+local fastSpeed = 3
+
+-- Input table
+local input = {
+	W = false, A = false, S = false, D = false,
+	Q = false, E = false,
+	Shift = false
+}
+
+-- Movement logic
+local function updateMovement()
+	moveVec = Vector3.zero
+	if input.W then moveVec = moveVec + Vector3.new(0, 0, -1) end
+	if input.S then moveVec = moveVec + Vector3.new(0, 0, 1) end
+	if input.A then moveVec = moveVec + Vector3.new(-1, 0, 0) end
+	if input.D then moveVec = moveVec + Vector3.new(1, 0, 0) end
+	if input.Q then moveVec = moveVec + Vector3.new(0, -1, 0) end
+	if input.E then moveVec = moveVec + Vector3.new(0, 1, 0) end
+end
+
+-- Input handlers
+UserInputService.InputBegan:Connect(function(inputObj, processed)
+	if processed then return end
+	local key = inputObj.KeyCode
+
+	if key == Enum.KeyCode.LeftShift then input.Shift = true end
+	if key == Enum.KeyCode.W then input.W = true end
+	if key == Enum.KeyCode.S then input.S = true end
+	if key == Enum.KeyCode.A then input.A = true end
+	if key == Enum.KeyCode.D then input.D = true end
+	if key == Enum.KeyCode.Q then input.Q = true end
+	if key == Enum.KeyCode.E then input.E = true end
+end)
+
+UserInputService.InputEnded:Connect(function(inputObj)
+	local key = inputObj.KeyCode
+
+	if key == Enum.KeyCode.LeftShift then input.Shift = false end
+	if key == Enum.KeyCode.W then input.W = false end
+	if key == Enum.KeyCode.S then input.S = false end
+	if key == Enum.KeyCode.A then input.A = false end
+	if key == Enum.KeyCode.D then input.D = false end
+	if key == Enum.KeyCode.Q then input.Q = false end
+	if key == Enum.KeyCode.E then input.E = false end
+end)
+
+UserInputService.InputChanged:Connect(function(inputObj)
+	if enabled and inputObj.UserInputType == Enum.UserInputType.MouseMovement then
+		local delta = inputObj.Delta
+		rotation = rotation + Vector2.new(-delta.y, -delta.x) * 0.002
+	end
+end)
+
+-- RenderStepped update
+RunService.RenderStepped:Connect(function()
+	if not enabled then return end
+	updateMovement()
+
+	local moveSpeed = input.Shift and fastSpeed or speed
+	local camMove = camCF:VectorToWorldSpace(moveVec) * moveSpeed
+
+	-- Apply rotation and movement
+	local xRot = CFrame.Angles(rotation.X, 0, 0)
+	local yRot = CFrame.Angles(0, rotation.Y, 0)
+	camCF = CFrame.new(camCF.Position) * yRot * xRot + camMove
+
+	camera.CFrame = camCF
+end)
+
+-- Toggle FreeCam function
+local function toggleFreeCam()
+	enabled = not enabled
+	if enabled then
+		camCF = camera.CFrame
+		rotation = Vector2.new()
+		UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
+		UserInputService.MouseIconEnabled = false
+	else
+		UserInputService.MouseBehavior = Enum.MouseBehavior.Default
+		UserInputService.MouseIconEnabled = true
+	end
+end
+
+-- Connect the GUI button
+toggleButton.MouseButton1Click:Connect(toggleFreeCam)

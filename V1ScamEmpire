@@ -44,7 +44,7 @@ local function assignPlotName(player)
 				if surfaceGui then
 					local playerNameLabel = surfaceGui:FindFirstChild("PlayerName")
 					if playerNameLabel and playerNameLabel:IsA("TextLabel") then
-						if playerNameLabel.Text == player.Name then
+						if playerNameLabel.Text == player.DisplayName .. "'s" then
 							plot.Name = player.Name
 							print("Plot renamed to:", player.Name)
 							return
@@ -64,7 +64,7 @@ local autoTab = Window:CreateTab("Misc")
 local AutoCollect = autoTab:CreateToggle({
    Name = "Collect",
    CurrentValue = false,
-   Flag = "Collect",
+   Flag = "Collection_Auto",
   Callback = function(CurrentValue)
     assignPlotName(player)
     isAutoCollect = CurrentValue
@@ -78,7 +78,7 @@ local AutoCollect = autoTab:CreateToggle({
             end
         end
 
-        task.wait(1) -- Prevent crashing or hanging your game
+        task.wait(0.5)
     end
 end,
 })

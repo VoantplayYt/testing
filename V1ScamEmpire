@@ -1,0 +1,80 @@
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "Bubble Gum Simulator Infinity | Austin Scripts",
+   Icon = "blinds",
+   LoadingTitle = "Bubble Gum Simulator Infinity",
+   LoadingSubtitle = "by Austin Scripts",
+   Theme = "Default",
+
+   ToggleUIKeybind = "K",
+
+   ConfigurationSaving = {
+      Enabled = false,
+      FolderName = nil,
+      FileName = "BubbleGumConfig"
+   },
+
+   Discord = {
+      Enabled = true,
+      Invite = "tMTpDsGcdT",
+      RememberJoins = true
+   },
+   KeySystem = false,
+})
+
+--// Services \\--
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+--// Vars \\--
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+local Plots = workspace:WaitForChild("Main").Plots
+
+local isAutoCollect = false
+
+local function assignPlotName(player)
+	for _, plot in pairs(Plots:GetChildren()) do
+		local sign = plot:FindFirstChild("Sign")
+		if sign then
+			local board = sign:FindFirstChild("Board")
+			if board then
+				local surfaceGui = board:FindFirstChild("SurfaceGui")
+				if surfaceGui then
+					local playerNameLabel = surfaceGui:FindFirstChild("PlayerName")
+					if playerNameLabel and playerNameLabel:IsA("TextLabel") then
+						if playerNameLabel.Text == player.Name then
+							plot.Name = player.Name
+							print("Plot renamed to:", player.Name)
+							return
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+--// Tabs \\--
+local autoTab = Window:CreateTab("Misc")
+
+--// auto \\--
+
+local AutoCollect = autoTab:CreateToggle({
+   Name = "Auto Collect",
+   CurrentValue = false,
+   Flag = "Collect",
+   Callback = function(Value)
+        assignPlotName()
+        isAutoCollect = Value
+        while isAutoCollect do
+            local PlayersPlot = Plots:FindFirstChild(player.Name)
+            local Items = PlayersPlot:FindFirstChild("Items")
+
+            for _, item in pairs(Items:GetChildren()) do
+                game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("Functions"):WaitForChild(""):InvokeServer(item)
+            end
+        end
+   end,
+})

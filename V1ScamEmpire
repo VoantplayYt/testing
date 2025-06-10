@@ -1,9 +1,9 @@
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "Bubble Gum Simulator Infinity | Austin Scripts",
+   Name = "Build A Scammer Empire | Austin Scripts",
    Icon = "blinds",
-   LoadingTitle = "Bubble Gum Simulator Infinity",
+   LoadingTitle = "Build A Scammer Empire",
    LoadingSubtitle = "by Austin Scripts",
    Theme = "Default",
 
@@ -65,9 +65,9 @@ local AutoCollect = autoTab:CreateToggle({
    Name = "Auto Collect",
    CurrentValue = false,
    Flag = "Collect",
-   Callback = function(Value)
+   Callback = function(CurrentValue)
         assignPlotName()
-        isAutoCollect = Value
+        isAutoCollect = CurrentValue
         while isAutoCollect do
             local PlayersPlot = Plots:FindFirstChild(player.Name)
             local Items = PlayersPlot:FindFirstChild("Items")

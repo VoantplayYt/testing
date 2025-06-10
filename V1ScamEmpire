@@ -65,16 +65,20 @@ local AutoCollect = autoTab:CreateToggle({
    Name = "Collect",
    CurrentValue = false,
    Flag = "Collect",
-   Callback = function(CurrentValue)
-        assignPlotName()
-        isAutoCollect = CurrentValue
-        while isAutoCollect do
-            local PlayersPlot = Plots:FindFirstChild(player.Name)
-            local Items = PlayersPlot:FindFirstChild("Items")
+  Callback = function(CurrentValue)
+    assignPlotName(player)
+    isAutoCollect = CurrentValue
+    while isAutoCollect do
+        local PlayersPlot = Plots:FindFirstChild(player.Name)
+        local Items = PlayersPlot and PlayersPlot:FindFirstChild("Items")
 
+        if Items then
             for _, item in pairs(Items:GetChildren()) do
                 game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("Functions"):WaitForChild(""):InvokeServer(item)
             end
         end
-   end,
+
+        task.wait(1) -- Prevent crashing or hanging your game
+    end
+end,
 })

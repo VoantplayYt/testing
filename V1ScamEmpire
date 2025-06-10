@@ -62,7 +62,7 @@ local autoTab = Window:CreateTab("Misc")
 --// auto \\--
 
 local AutoCollect = autoTab:CreateToggle({
-   Name = "Auto Collect",
+   Name = "Collect",
    CurrentValue = false,
    Flag = "Collect",
    Callback = function(CurrentValue)

@@ -75,6 +75,7 @@ local AutoCollect = autoTab:CreateToggle({
         if Items then
             for _, item in pairs(Items:GetChildren()) do
                 game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("Functions"):WaitForChild(""):InvokeServer(item)
+		task.wait(1)
             end
         end
 

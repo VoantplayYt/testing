@@ -14,7 +14,7 @@ local Window = Rayfield:CreateWindow({
       FolderName = nil,
       FileName = "BubbleGumConfig"
    },
---h
+
    Discord = {
       Enabled = true,
       Invite = "tMTpDsGcdT",
@@ -120,17 +120,30 @@ miscTab:CreateLabel("Info")
 local Divider = miscTab:CreateDivider()
 Divider:Set(true)
 
-local autoSeason = miscTab:CreateToggle({
+local autoSeason = autoTab:CreateToggle({
    Name = "Auto Season",
    Flag = "ClaimSeason",
    CurrentValue = false,
    Callback = function(Value)
       AutoSeason = Value
+
+      -- debug print
+      print("[AutoSeason] Toggled:", Value)
+
       while AutoSeason do
-         autoSeasonCheck()
+         print("[AutoSeason] Running checkChallengeList...")
+
+         pcall(function()
+            checkChallengeList(challengeFrame)
+         end)
+
+         print("[AutoSeason] Firing ClaimSeason")
          Remote:FireServer("ClaimSeason")
-         task.wait(0.5)
+
+         task.wait(1)
       end
+
+      print("[AutoSeason] Stopped")
    end,
 })
 

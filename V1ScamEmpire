@@ -22,7 +22,7 @@ local Window = Rayfield:CreateWindow({
    },
    KeySystem = false,
 })
---ll
+
 --// Services \\--
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -120,33 +120,6 @@ miscTab:CreateLabel("Info")
 local Divider = miscTab:CreateDivider()
 Divider:Set(true)
 
-local autoSeason = autoTab:CreateToggle({
-   Name = "Auto Season",
-   Flag = "ClaimSeason",
-   CurrentValue = false,
-   Callback = function(Value)
-      AutoSeason = Value
-
-      -- debug print
-      print("[AutoSeason] Toggled:", Value)
-
-      while AutoSeason do
-         print("[AutoSeason] Running checkChallengeList...")
-
-         pcall(function()
-            checkChallengeList(challengeFrame)
-         end)
-
-         print("[AutoSeason] Firing ClaimSeason")
-         Remote:FireServer("ClaimSeason")
-
-         task.wait(1)
-      end
-
-      print("[AutoSeason] Stopped")
-   end,
-})
-
 local destroyGui = miscTab:CreateButton({
     Name = "Destroy UI",
     Callback = function()
@@ -177,10 +150,24 @@ local autoSeason = autoTab:CreateToggle({
    CurrentValue = false,
    Callback = function(Value)
       AutoSeason = Value
+
+      -- debug print
+      print("[AutoSeason] Toggled:", Value)
+
       while AutoSeason do
+         print("[AutoSeason] Running checkChallengeList...")
+
+         pcall(function()
+            checkChallengeList(challengeFrame)
+         end)
+
+         print("[AutoSeason] Firing ClaimSeason")
          Remote:FireServer("ClaimSeason")
-         task.wait(0.5)
+
+         task.wait(1)
       end
+
+      print("[AutoSeason] Stopped")
    end,
 })
 

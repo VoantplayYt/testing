@@ -74,6 +74,8 @@ local autoSeason = miscTab:CreateToggle({
    end,
 })
 
+local AutoPickup = false
+
 local autoPickup = miscTab:CreateToggle({
    Name = "Auto Pickups",
    Flag = "ClaimPickup",
@@ -82,18 +84,31 @@ local autoPickup = miscTab:CreateToggle({
       AutoPickup = Value
 
       while AutoPickup do
-         local renderedFolder = workspace:WaitForChild("Rendered").Chunker
-         if renderedFolder then
-            for _, item in ipairs(renderedFolder:GetChildren()) do
-               if item:IsA("Model") or item:IsA("Part") then
-                  Remote:FireServer("CollectPickup", item)
+         local rendered = workspace:FindFirstChild("Rendered")
+         if rendered then
+            -- Find the first Chunker that has children
+            for _, chunker in ipairs(rendered:GetChildren()) do
+               if chunker:IsA("Folder") and #chunker:GetChildren() > 0 then
+                  -- Optionally rename it for clarity
+                  chunker.Name = "Collectables"
+
+                  -- Loop through the collectables
+                  for _, item in ipairs(chunker:GetChildren()) do
+                     if item:IsA("Model") or item:IsA("Part") then
+                        Remote:FireServer("CollectPickup", item)
+                     end
+                  end
+
+                  break -- stop after the first non-empty chunker
                end
             end
          end
-         task.wait(1)
+
+         task.wait(1) -- reasonable delay to avoid spamming
       end
    end,
 })
+
 
 local destroyGui = miscTab:CreateButton({
     Name = "Destroy UI",

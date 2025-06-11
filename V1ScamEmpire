@@ -28,6 +28,10 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 --// Vars \\--
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+local Remote = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Framework"):WaitForChild("Network"):WaitForChild("Remote"):WaitForChild("RemoteEvent")
+
 local RemoteFires = {
    "ClaimAllPlaytime",
    "HatchPowerupEgg, Season 3 Egg, 1",
@@ -35,13 +39,68 @@ local RemoteFires = {
 
 }
 
-local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
-local Remote = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Framework"):WaitForChild("Network"):WaitForChild("Remote"):WaitForChild("RemoteEvent")
-local Worlds = {
-   Overworld = Workspace:WaitForChild("Worlds"):WaitForChild("The Overworld"),
-   Minigame = Workspace:WaitForChild("Worlds"):WaitForChild("Minigame Paradise")
-}
+local challengeFrame = gui.Season.Frame.Content.Challenges.Hourly.List
+
+local function getHRP()
+	return player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+end
+
+local function distanceTo(position)
+	return (HumanoidRootPart.Position - position).Magnitude
+end
+
+local function teleportToSpawn()
+	Remote:FireServer("Teleport", "Workspace.Worlds.The Overworld.PortalSpawn")
+end
+
+local function tweenToPosition(position)
+	local hrp = getHRP()
+	if not hrp then return end
+
+	local goal = {Position = position}
+	local tween = TweenService:Create(hrp, TweenInfo.new(2, Enum.EasingStyle.Linear), goal)
+	tween:Play()
+end
+
+local EggFolder =  Workspace:WaitForChild("Rendered"):WaitForChild("Generic")
+
+local function goToEggsSequence(chosen)
+	local infinityEggPos = EggFolder:WaitForChild("Infinity Egg").Position
+	local chosenEggPos = EggFolder[chosen].Position
+
+	if distanceTo(infinityEggPos) > 50 then
+		teleportToSpawn()
+		task.wait(2)
+	end
+
+	tweenToPosition(infinityEggPos)
+	task.wait(2)
+	tweenToPosition(chosenEggPos)
+end
+
+local function checkChallengeList(challengeList)
+	for _, challenge in ipairs(challengeList:GetChildren()) do
+		if challenge:IsA("Frame") and challenge:FindFirstChild("Content") then
+			local completedFrame = challenge:FindFirstChild("Completed")
+			if completedFrame and completedFrame:IsA("Frame") and completedFrame.Visible then
+				continue
+			end
+
+			local label = challenge.Content:FindFirstChild("Label")
+			if label and label:IsA("TextLabel") then
+				local text = label.Text
+
+				if string.find(text, "Hatch") and string.find(text, "Rare") then
+					goToEggsSequence("Iceshard Egg")
+				end
+				if string.find(text, "Hatch") and string.find(text, "Legendary") then
+					goToEggsSequence("Spikey Egg")
+				end
+				-- Add more conditions as needed
+			end
+		end
+	end
+end
 
 local AutoSeason = false
 local AutoPickup = false
@@ -62,6 +121,7 @@ local Divider = miscTab:CreateDivider()
 Divider:Set(true)
 
 
+
 local autoSeason = miscTab:CreateToggle({
    Name = "Auto Season",
    Flag = "ClaimSeason",
@@ -69,6 +129,7 @@ local autoSeason = miscTab:CreateToggle({
    Callback = function(Value)
       AutoSeason = Value
       while AutoSeason do
+         autoSeasonCheck()
          Remote:FireServer("ClaimSeason")
          task.wait(0.5)
       end

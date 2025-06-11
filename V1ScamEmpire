@@ -109,7 +109,7 @@ local autoPickup = miscTab:CreateToggle({
             if collectablesFolder then
                for _, item in ipairs(collectablesFolder:GetChildren()) do
                   if item:IsA("Model") or item:IsA("Part") then
-                     Remote:FireServer("CollectPickup", item)
+                     Remote:FireServer("CollectPickup", item.Name)
                   end
                end
             end

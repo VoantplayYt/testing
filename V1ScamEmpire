@@ -44,6 +44,7 @@ local Worlds = {
 }
 
 local AutoSeason = false
+local AutoPickup = false
 local AutoPlaytime = false
 
 local petPath = playerGui:WaitForChild("ScreenGui"):WaitForChild("Inventory"):WaitForChild("Frame").Inner.Pets.Main.ScrollingFrame.Pets
@@ -54,6 +55,8 @@ local hatchTab = Window:CreateTab("Hatch")
 local teleportTab = Window:CreateTab("Teleports")
 
 --// misc \\--
+teleportTab:CreateLabel("Info")
+
 local Divider = miscTab:CreateDivider()
 Divider:Set(true)
 
@@ -67,6 +70,27 @@ local autoSeason = miscTab:CreateToggle({
       while AutoSeason do
          Remote:FireServer("ClaimSeason")
          task.wait(0.5)
+      end
+   end,
+})
+
+local autoPickup = miscTab:CreateToggle({
+   Name = "Auto Pickups",
+   Flag = "ClaimPickup",
+   CurrentValue = false,
+   Callback = function(Value)
+      AutoPickup = Value
+
+      while AutoPickup do
+         local renderedFolder = workspace:WaitForChild("Rendered").Chunker
+         if renderedFolder then
+            for _, item in ipairs(renderedFolder:GetChildren()) do
+               if item:IsA("Model") or item:IsA("Part") then
+                  Remote:FireServer("CollectPickup", item)
+               end
+            end
+         end
+         task.wait(1)
       end
    end,
 })

@@ -74,8 +74,6 @@ local autoSeason = miscTab:CreateToggle({
    end,
 })
 
-local AutoPickup = false
-
 local autoPickup = miscTab:CreateToggle({
    Name = "Auto Pickups",
    Flag = "ClaimPickup",
@@ -86,25 +84,33 @@ local autoPickup = miscTab:CreateToggle({
       while AutoPickup do
          local rendered = workspace:FindFirstChild("Rendered")
          if rendered then
-            -- Find the first Chunker that has children
             for _, chunker in ipairs(rendered:GetChildren()) do
-               if chunker:IsA("Folder") and #chunker:GetChildren() > 0 then
-                  -- Optionally rename it for clarity
-                  chunker.Name = "Collectables"
+               if chunker:IsA("Folder") then
+                  local hasCollectables = false
 
-                  -- Loop through the collectables
                   for _, item in ipairs(chunker:GetChildren()) do
-                     if item:IsA("Model") or item:IsA("Part") then
-                        Remote:FireServer("CollectPickup", item)
+                     if typeof(item.Name) == "string" and string.find(item.Name, "-") then
+                        hasCollectables = true
+                        break
                      end
                   end
 
-                  break -- stop after the first non-empty chunker
+                  if hasCollectables then
+                     chunker.Name = "Collectables"
+
+                     for _, item in ipairs(chunker:GetChildren()) do
+                        if item:IsA("Model") or item:IsA("Part") then
+                           Remote:FireServer("CollectPickup", item)
+                        end
+                     end
+
+                     break -- Found the correct one, no need to keep looping
+                  end
                end
             end
          end
 
-         task.wait(1) -- reasonable delay to avoid spamming
+         task.wait(1)
       end
    end,
 })

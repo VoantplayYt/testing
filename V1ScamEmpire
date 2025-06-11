@@ -39,7 +39,7 @@ local RemoteFires = {
 
 }
 
-local challengeFrame = ScreenGui:WaitForChild("Season"):WaitForChild("Frame"):WaitForChild("Content"):WaitForChild("Challenges")
+local challengeFrame = PlayerGui:WaitForChild("ScreenGui"):WaitForChild("Season"):WaitForChild("Frame"):WaitForChild("Content"):WaitForChild("Challenges")
 
 local function getHRP()
 	return player.Character and player.Character:FindFirstChild("HumanoidRootPart")

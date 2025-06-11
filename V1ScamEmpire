@@ -84,7 +84,6 @@ local autoPickup = miscTab:CreateToggle({
       while AutoPickup do
          local rendered = workspace:FindFirstChild("Rendered")
          if rendered then
-            -- Reuse if already renamed
             local collectablesFolder = rendered:FindFirstChild("Collectables")
 
             if not collectablesFolder then
@@ -95,6 +94,7 @@ local autoPickup = miscTab:CreateToggle({
                         for _, item in ipairs(possible:GetChildren()) do
                            if string.find(item.Name, "%d") then
                               possible.Name = "Collectables"
+                              possible.Parent = rendered -- Move it to Rendered
                               collectablesFolder = possible
                               break
                            end
@@ -105,7 +105,6 @@ local autoPickup = miscTab:CreateToggle({
                end
             end
 
-            -- Now loop and collect pickups
             if collectablesFolder then
                for _, item in ipairs(collectablesFolder:GetChildren()) do
                   if item:IsA("Model") or item:IsA("Part") then
@@ -114,6 +113,7 @@ local autoPickup = miscTab:CreateToggle({
                end
             end
          end
+
          task.wait(1)
       end
    end,

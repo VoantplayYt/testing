@@ -78,8 +78,8 @@ local function goToEggsSequence(chosen)
 	tweenToPosition(chosenEggPos)
 end
 
-local function checkChallengeList(challengeList)
-	for _, challenge in ipairs(challengeList:GetChildren()) do
+local function checkChallengeList(challengeFrame)
+	for _, challenge in ipairs(challengeFrame:GetChildren()) do
 		if challenge:IsA("Frame") and challenge:FindFirstChild("Content") then
 			local completedFrame = challenge:FindFirstChild("Completed")
 			if completedFrame and completedFrame:IsA("Frame") and completedFrame.Visible then
@@ -261,4 +261,3 @@ teleportTab:CreateButton({
         Remote:FireServer("Teleport", "Workspace.Worlds.The Overworld.Islands.Zen.Island.Portal.Spawn")
     end,
 })
--- WHY IS IT BEING SO WEIRD

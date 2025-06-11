@@ -23,7 +23,7 @@ local Window = Rayfield:CreateWindow({
    KeySystem = false,
 })
 
---// Services \\--/
+--// Services \\--
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -85,11 +85,17 @@ local function goToEggsSequence(chosen)
 end
 
 local function checkChallengeList(challengeFrame)
+	print("[AutoSeason] Running checkChallengeList...")
+
 	for _, challenge in ipairs(challengeFrame:GetChildren()) do
+		print("[Challenge] Checking:", challenge.Name)
+
 		if challenge:IsA("Frame") and challenge:FindFirstChild("Content") then
 			local completedFrame = challenge:FindFirstChild("Completed")
+			print("[Challenge] Found Content. Completed visible:", completedFrame and completedFrame.Visible)
+
 			if completedFrame and completedFrame:IsA("Frame") and completedFrame.Visible then
-				print("[Challenge] Skipped completed challenge.")
+				print("[Challenge] Skipping completed challenge:", challenge.Name)
 				continue
 			end
 
@@ -98,16 +104,21 @@ local function checkChallengeList(challengeFrame)
 				local text = label.Text
 				print("[Challenge] Found:", text)
 
-				if string.find(text, "Hatch") and string.find(text, "Rare") then
+				local lowerText = string.lower(text)
+				if string.find(lowerText, "hatch") and string.find(lowerText, "rare") then
 					print("[Challenge] Matched Rare Hatch challenge. Going to Iceshard Egg.")
 					goToEggsSequence("Iceshard Egg")
-				elseif string.find(text, "Hatch") and string.find(text, "Legendary") then
+				elseif string.find(lowerText, "hatch") and string.find(lowerText, "legendary") then
 					print("[Challenge] Matched Legendary Hatch challenge. Going to Spikey Egg.")
 					goToEggsSequence("Spikey Egg")
 				else
-					print("[Challenge] No match for:", text)
+					print("[Challenge] No match for:", lowerText)
 				end
+			else
+				print("[Challenge] No Label found in:", challenge.Name)
 			end
+		else
+			print("[Challenge] Not a valid challenge frame:", challenge.Name)
 		end
 	end
 end
@@ -160,24 +171,15 @@ local autoSeason = autoTab:CreateToggle({
    CurrentValue = false,
    Callback = function(Value)
       AutoSeason = Value
-
-      -- debug print
-      print("[AutoSeason] Toggled:", Value)
-
       while AutoSeason do
-         print("[AutoSeason] Running checkChallengeList...")
-
          pcall(function()
             checkChallengeList(challengeFrame)
          end)
 
-         print("[AutoSeason] Firing ClaimSeason")
          Remote:FireServer("ClaimSeason")
 
          task.wait(1)
       end
-
-      print("[AutoSeason] Stopped")
    end,
 })
 

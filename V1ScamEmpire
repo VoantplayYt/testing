@@ -130,42 +130,41 @@ teleportTab:CreateLabel("Minigame Paradise")
 teleportTab:CreateButton({
     Name = "Spawn",
     Callback = function()
-        Remote:FireServer("Teleport", Worlds.Overworld.PortalSpawn)
+        Remote:FireServer("Teleport", Workspace.Worlds.The Overworld.PortalSpawn)
     end,
 })
 
 teleportTab:CreateButton({
     Name = "Floating Island",
     Callback = function()
-        Remote:FireServer("Teleport", Worlds.Overworld.Islands["Floating Island"].Island.Portal.Spawn)
+        Remote:FireServer("Teleport", Workspace.Worlds.The Overworld.Islands.Floating Island.Island.Portal.Spawn)
     end,
 })
 
 teleportTab:CreateButton({
     Name = "Outer Space",
     Callback = function()
-        Remote:FireServer("Teleport", Worlds.Overworld.Islands["Outer Space"].Island.Portal.Spawn)
+        Remote:FireServer("Teleport", Workspace.Worlds.The Overworld.Islands.Outer Space.Island.Portal.Spawn)
     end,
 })
 
 teleportTab:CreateButton({
     Name = "Twilight",
     Callback = function()
-        Remote:FireServer("Teleport", Worlds.Overworld.Islands["Twilight"].Island.Portal.Spawn)
+        Remote:FireServer("Teleport", Workspace.Worlds.The Overworld.Islands.Twilight.Island.Portal.Spawn)
     end,
 })
 
 teleportTab:CreateButton({
     Name = "The Void",
     Callback = function()
-        Remote:FireServer("Teleport", Worlds.Overworld.Islands["The Void"].Island.Portal.Spawn)
+        Remote:FireServer("Teleport", Workspace.Worlds.The Overworld.Islands.The Void.Island.Portal.Spawn)
     end,
 })
 
 teleportTab:CreateButton({
     Name = "Zen",
     Callback = function()
-        Remote:FireServer("Teleport", Worlds.Overworld.Islands["Zen"].Island.Portal.Spawn)
+        Remote:FireServer("Teleport", Workspace.Worlds.The Overworld.Islands.Zen.Island.Portal.Spawn)
     end,
 })
---hu

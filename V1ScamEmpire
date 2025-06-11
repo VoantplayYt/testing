@@ -8,7 +8,7 @@ local Window = Rayfield:CreateWindow({
    Theme = "Default",
 
    ToggleUIKeybind = "K",
---l
+
    ConfigurationSaving = {
       Enabled = false,
       FolderName = nil,
@@ -85,39 +85,37 @@ local function goToEggsSequence(chosen)
 end
 
 local function checkChallengeList(challengeFrame)
-	print("[AutoSeason] Running checkChallengeList...")
-	print("[AutoSeason] challengeFrame Children:", #challengeFrame:GetChildren())
+	print("[Debug] Checking challenge list...")
 
 	for _, challenge in ipairs(challengeFrame:GetChildren()) do
-		if challenge:IsA("Frame") and challenge:FindFirstChild("Content") and challenge:FindFirstChild("Completed") then
-			print("[Challenge] Valid challenge frame:", challenge.Name)
-
+		if challenge:IsA("Frame") and challenge:FindFirstChild("Content") then
 			local completedFrame = challenge:FindFirstChild("Completed")
-			if completedFrame.Visible then
-				print("[Challenge] Skipping completed challenge:", challenge.Name)
+			if completedFrame and completedFrame:IsA("Frame") and completedFrame.Visible then
+				print("[Skip] Challenge already completed:", challenge.Name)
 				continue
 			end
 
-			local label = challenge.Content:FindFirstChild("Label")
-			if label and label:IsA("TextLabel") then
+			local label = challenge.Content:FindFirstChildWhichIsA("TextLabel", true)
+			if label then
 				local text = label.Text
-				print("[Challenge] Found:", text)
+				print("[Challenge Text]:", text)
 
 				local lowerText = string.lower(text)
+
 				if string.find(lowerText, "hatch") and string.find(lowerText, "rare") then
-					print("[Challenge] Matched Rare Hatch challenge. Going to Iceshard Egg.")
+					print("[Match] Rare Hatch Challenge Found!")
 					goToEggsSequence("Iceshard Egg")
 				elseif string.find(lowerText, "hatch") and string.find(lowerText, "legendary") then
-					print("[Challenge] Matched Legendary Hatch challenge. Going to Spikey Egg.")
+					print("[Match] Legendary Hatch Challenge Found!")
 					goToEggsSequence("Spikey Egg")
 				else
-					print("[Challenge] No match for:", lowerText)
+					print("[No Match] Text seen:", lowerText)
 				end
 			else
-				print("[Challenge] No Label in:", challenge.Name)
+				print("[No Label Found] in", challenge.Name)
 			end
 		else
-			print("[Challenge] Not a valid challenge frame:", challenge.Name)
+			print("[Invalid Frame] Skipping:", challenge.Name)
 		end
 	end
 end

@@ -84,37 +84,34 @@ local autoPickup = miscTab:CreateToggle({
       while AutoPickup do
          local rendered = workspace:FindFirstChild("Rendered")
          if rendered then
-            for _, chunker in ipairs(rendered:GetChildren()) do
-               if chunker:IsA("Folder") then
-                  local hasCollectables = false
-
-                  for _, item in ipairs(chunker:GetChildren()) do
-                     if typeof(item.Name) == "string" and string.find(item.Name, "-") then
-                        hasCollectables = true
-                        break
-                     end
-                  end
-
-                  if hasCollectables then
-                     chunker.Name = "Collectables"
-
-                     for _, item in ipairs(chunker:GetChildren()) do
-                        if item:IsA("Model") or item:IsA("Part") then
-                           Remote:FireServer("CollectPickup", item)
+            local chunkerFolder = rendered:FindFirstChild("Chunker")
+            if chunkerFolder then
+               for _, possible in ipairs(chunkerFolder:GetChildren()) do
+                  if possible:IsA("Folder") then
+                     local hasNumberedName = false
+                     for _, item in ipairs(possible:GetChildren()) do
+                        if string.find(item.Name, "%d") then
+                           hasNumberedName = true
+                           break
                         end
                      end
 
-                     break -- Found the correct one, no need to keep looping
+                     if hasNumberedName then
+                        for _, item in ipairs(possible:GetChildren()) do
+                           if item:IsA("Model") or item:IsA("Part") then
+                              Remote:FireServer("CollectPickup", item)
+                           end
+                        end
+                        break -- stop once the correct folder is found
+                     end
                   end
                end
             end
          end
-
          task.wait(1)
       end
    end,
 })
-
 
 local destroyGui = miscTab:CreateButton({
     Name = "Destroy UI",

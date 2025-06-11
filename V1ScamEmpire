@@ -84,27 +84,32 @@ local autoPickup = miscTab:CreateToggle({
       while AutoPickup do
          local rendered = workspace:FindFirstChild("Rendered")
          if rendered then
+            -- Reuse if already renamed
             local collectablesFolder = rendered:FindFirstChild("Collectables")
 
             if not collectablesFolder then
-               local chunkerFolder = rendered:FindFirstChild("Chunker")
-               if chunkerFolder then
-                  for _, possible in ipairs(chunkerFolder:GetChildren()) do
-                     if possible:IsA("Folder") then
-                        for _, item in ipairs(possible:GetChildren()) do
-                           if string.find(item.Name, "%d") then
-                              possible.Name = "Collectables"
-                              possible.Parent = rendered -- Move it to Rendered
-                              collectablesFolder = possible
-                              break
+               -- Loop through all "Chunker" folders
+               for _, chunker in ipairs(rendered:GetChildren()) do
+                  if chunker:IsA("Folder") and chunker.Name == "Chunker" then
+                     for _, subFolder in ipairs(chunker:GetChildren()) do
+                        if subFolder:IsA("Folder") then
+                           for _, item in ipairs(subFolder:GetChildren()) do
+                              if string.find(item.Name, "%d") then
+                                 subFolder.Name = "Collectables"
+                                 subFolder.Parent = rendered -- Move out of Chunker into Rendered
+                                 collectablesFolder = subFolder
+                                 break
+                              end
                            end
                         end
                         if collectablesFolder then break end
                      end
                   end
+                  if collectablesFolder then break end
                end
             end
 
+            -- Now loop and collect pickups
             if collectablesFolder then
                for _, item in ipairs(collectablesFolder:GetChildren()) do
                   if item:IsA("Model") or item:IsA("Part") then

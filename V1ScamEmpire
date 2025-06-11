@@ -1,9 +1,9 @@
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "Build A Scammer Empire | Austin Scripts",
+   Name = "Bubble Gum Simulator Infinity | Austin Scripts",
    Icon = "blinds",
-   LoadingTitle = "Build A Scammer Empire",
+   LoadingTitle = "Bubble Gum Simulator Infinity",
    LoadingSubtitle = "by Austin Scripts",
    Theme = "Default",
 
@@ -28,58 +28,143 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 --// Vars \\--
+local RemoteFires = {
+   "ClaimAllPlaytime",
+   "HatchPowerupEgg, Season 3 Egg, 1",
+   "Teleport, Location"
+
+}
+
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
-local Plots = workspace:WaitForChild("Main").Plots
+local Remote = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Framework"):WaitForChild("Network"):WaitForChild("Remote"):WaitForChild("RemoteEvent")
+local Worlds = {
+   Overworld = Workspace:WaitForChild("Worlds"):WaitForChild("The Overworld"),
+   Minigame = Workspace:WaitForChild("Worlds"):WaitForChild("Minigame Paradise")
+}
 
-local isAutoCollect = false
+local AutoSeason = false
+local AutoPlaytime = false
 
-local function assignPlotName(player)
-	for _, plot in pairs(Plots:GetChildren()) do
-		local sign = plot:FindFirstChild("Sign")
-		if sign then
-			local board = sign:FindFirstChild("Board")
-			if board then
-				local surfaceGui = board:FindFirstChild("SurfaceGui")
-				if surfaceGui then
-					local playerNameLabel = surfaceGui:FindFirstChild("PlayerName")
-					if playerNameLabel and playerNameLabel:IsA("TextLabel") then
-						if playerNameLabel.Text == player.DisplayName .. "'s" then
-							plot.Name = player.Name
-							print("Plot renamed to:", player.Name)
-							return
-						end
-					end
-				end
-			end
-		end
-	end
-end
+local petPath = playerGui:WaitForChild("ScreenGui"):WaitForChild("Inventory"):WaitForChild("Frame").Inner.Pets.Main.ScrollingFrame.Pets
 
 --// Tabs \\--
-local autoTab = Window:CreateTab("Misc")
+local miscTab = Window:CreateTab("Misc")
+local hatchTab = Window:CreateTab("Hatch")
+local teleportTab = Window:CreateTab("Teleports")
 
---// auto \\--
+--// misc \\--
+local Divider = miscTab:CreateDivider()
+Divider:Set(true)
 
-local AutoCollect = autoTab:CreateToggle({
-   Name = "Collect",
-   CurrentValue = false,
-   Flag = "Collection_Auto",
-  Callback = function(CurrentValue)
-    assignPlotName(player)
-    isAutoCollect = CurrentValue
-    while isAutoCollect do
-        local PlayersPlot = Plots:FindFirstChild(player.Name)
-        local Items = PlayersPlot and PlayersPlot:FindFirstChild("Items")
 
-        if Items then
-            for _, item in pairs(Items:GetChildren()) do
-                game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("Functions"):WaitForChild(""):InvokeServer(item)
-		task.wait(1)
-            end
-        end
+local autoSeason = miscTab:CreateToggle({
+   Name = "Auto Season",
+   Flag = "ClaimSeason",
+   local CurrentValue = false
+   Callback = function(Value)
+      AutoSeason = Value
+      while AutoSeason do
+         Remote:FireServer("ClaimSeason")
+         Wait(0.5)
+      end
+   end,
+})
 
-        task.wait(0.5)
-    end
-end,
+local destroyGui = miscTab:CreateButton({
+    Name = "Destroy UI",
+    Callback = function()
+        Rayfield:Destroy()
+    end,
+})
+
+--// teleport \\--
+teleportTab:CreateLabel("The Overwold")
+
+teleportTab:CreateButton({
+    Name = "Spawn",
+    Callback = function()
+        Remote:FireServer("Teleport", Worlds.Overworld.PortalSpawn)
+    end,
+})
+
+teleportTab:CreateButton({
+    Name = "Floating Island",
+    Callback = function()
+        Remote:FireServer("Teleport", Worlds.Overworld.Islands["Floating Island"].Island.Portal.Spawn)
+    end,
+})
+
+teleportTab:CreateButton({
+    Name = "Outer Space",
+    Callback = function()
+        Remote:FireServer("Teleport", Worlds.Overworld.Islands["Outer Space"].Island.Portal.Spawn)
+    end,
+})
+
+teleportTab:CreateButton({
+    Name = "Twilight",
+    Callback = function()
+        Remote:FireServer("Teleport", Worlds.Overworld.Islands["Twilight"].Island.Portal.Spawn)
+    end,
+})
+
+teleportTab:CreateButton({
+    Name = "The Void",
+    Callback = function()
+        Remote:FireServer("Teleport", Worlds.Overworld.Islands["The Void"].Island.Portal.Spawn)
+    end,
+})
+
+teleportTab:CreateButton({
+    Name = "Zen",
+    Callback = function()
+        Remote:FireServer("Teleport", Worlds.Overworld.Islands["Zen"].Island.Portal.Spawn)
+    end,
+})
+
+teleportTab:CreateDivider()
+
+teleportTab:CreateLabel("Minigame Paradise")
+
+teleportTab:CreateButton({
+    Name = "Spawn",
+    Callback = function()
+        Remote:FireServer("Teleport", Worlds.Overworld.PortalSpawn)
+    end,
+})
+
+teleportTab:CreateButton({
+    Name = "Floating Island",
+    Callback = function()
+        Remote:FireServer("Teleport", Worlds.Overworld.Islands["Floating Island"].Island.Portal.Spawn)
+    end,
+})
+
+teleportTab:CreateButton({
+    Name = "Outer Space",
+    Callback = function()
+        Remote:FireServer("Teleport", Worlds.Overworld.Islands["Outer Space"].Island.Portal.Spawn)
+    end,
+})
+
+teleportTab:CreateButton({
+    Name = "Twilight",
+    Callback = function()
+        Remote:FireServer("Teleport", Worlds.Overworld.Islands["Twilight"].Island.Portal.Spawn)
+    end,
+})
+
+teleportTab:CreateButton({
+    Name = "The Void",
+    Callback = function()
+        Remote:FireServer("Teleport", Worlds.Overworld.Islands["The Void"].Island.Portal.Spawn)
+    end,
+})
+
+teleportTab:CreateButton({
+    Name = "Zen",
+    Callback = function()
+        Remote:FireServer("Teleport", Worlds.Overworld.Islands["Zen"].Island.Portal.Spawn)
+    end,
 })

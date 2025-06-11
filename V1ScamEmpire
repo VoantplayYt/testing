@@ -8,7 +8,7 @@ local Window = Rayfield:CreateWindow({
    Theme = "Default",
 
    ToggleUIKeybind = "K",
---lll
+
    ConfigurationSaving = {
       Enabled = false,
       FolderName = nil,
@@ -87,35 +87,38 @@ end
 local function checkChallengeList(challengeFrame)
 	print("[Debug] Checking challenge list...")
 
-	for _, challenge in ipairs(challengeFrame:GetChildren()) do
-		if challenge:IsA("Frame") and challenge:FindFirstChild("Content") then
-			local completedFrame = challenge:FindFirstChild("Completed")
-			if completedFrame and completedFrame:IsA("Frame") and completedFrame.Visible then
-				print("[Skip] Challenge already completed:", challenge.Name)
-				continue
-			end
+	for _, child in ipairs(challengeFrame:GetChildren()) do
+		if not (child:IsA("Frame") and child:FindFirstChild("Content")) then
+			print("[Skip] Invalid challenge entry:", child.Name)
+			continue
+		end
 
-			local label = challenge.Content:FindFirstChildWhichIsA("TextLabel", true)
-			if label then
-				local text = label.Text
-				print("[Challenge Text]:", text)
+		local label = child.Content:FindFirstChildWhichIsA("TextLabel", true)
+		if not label then
+			print("[Skip] No TextLabel in:", child.Name)
+			continue
+		end
 
-				local lowerText = string.lower(text)
+		local text = label.Text
+		local lowerText = string.lower(text)
 
-				if string.find(lowerText, "hatch") and string.find(lowerText, "rare") then
-					print("[Match] Rare Hatch Challenge Found!")
-					goToEggsSequence("Iceshard Egg")
-				elseif string.find(lowerText, "hatch") and string.find(lowerText, "legendary") then
-					print("[Match] Legendary Hatch Challenge Found!")
-					goToEggsSequence("Spikey Egg")
-				else
-					print("[No Match] Text seen:", lowerText)
-				end
-			else
-				print("[No Label Found] in", challenge.Name)
-			end
+		print("[Challenge Detected]:", text)
+
+		-- Skip if completed
+		local completed = child:FindFirstChild("Completed")
+		if completed and completed:IsA("Frame") and completed.Visible then
+			print("[Skip] Already completed:", text)
+			continue
+		end
+
+		if string.find(lowerText, "hatch") and string.find(lowerText, "rare") then
+			print("[Match] Rare Hatch Detected:", text)
+			goToEggsSequence("Iceshard Egg")
+		elseif string.find(lowerText, "hatch") and string.find(lowerText, "legendary") then
+			print("[Match] Legendary Hatch Detected:", text)
+			goToEggsSequence("Spikey Egg")
 		else
-			print("[Invalid Frame] Skipping:", challenge.Name)
+			print("[No Relevant Match]:", text)
 		end
 	end
 end

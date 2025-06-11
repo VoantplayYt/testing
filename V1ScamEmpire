@@ -130,7 +130,7 @@ teleportTab:CreateLabel("Minigame Paradise")
 teleportTab:CreateButton({
     Name = "Spawn",
     Callback = function()
-        Remote:FireServer("Teleport", "Workspace.Worlds.The Overworld.PortalSpawn")
+        Remote:FireServer("Teleport", "Workspace.Worlds.Minigame Paradise.PortalSpawn")
     end,
 })
 

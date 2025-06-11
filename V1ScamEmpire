@@ -14,7 +14,7 @@ local Window = Rayfield:CreateWindow({
       FolderName = nil,
       FileName = "BubbleGumConfig"
    },
-
+--h
    Discord = {
       Enabled = true,
       Invite = "tMTpDsGcdT",

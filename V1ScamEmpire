@@ -91,14 +91,14 @@ teleportTab:CreateButton({
 teleportTab:CreateButton({
     Name = "Floating Island",
     Callback = function()
-        Remote:FireServer("Teleport", Workspace.Worlds["The Overworld"].Islands["Floating Island"]Island.Portal.Spawn)
+        Remote:FireServer("Teleport", Workspace.Worlds["The Overworld"].Islands["Floating Island"].Island.Portal.Spawn)
     end,
 })
 
 teleportTab:CreateButton({
     Name = "Outer Space",
     Callback = function()
-        Remote:FireServer("Teleport", Workspace.Worlds["The Overworld"].Islands["Outer Space"]Island.Portal.Spawn)
+        Remote:FireServer("Teleport", Workspace.Worlds["The Overworld"].Islands["Outer Space"].Island.Portal.Spawn)
     end,
 })
 
@@ -112,7 +112,7 @@ teleportTab:CreateButton({
 teleportTab:CreateButton({
     Name = "The Void",
     Callback = function()
-        Remote:FireServer("Teleport", Workspace.Worlds["The Overworld"].Islands["The Void"]Island.Portal.Spawn)
+        Remote:FireServer("Teleport", Workspace.Worlds["The Overworld"].Islands["The Void"].Island.Portal.Spawn)
     end,
 })
 
@@ -137,14 +137,14 @@ teleportTab:CreateButton({
 teleportTab:CreateButton({
     Name = "Floating Island",
     Callback = function()
-        Remote:FireServer("Teleport", Workspace.Worlds["The Overworld"].Islands["Floating Island"]Island.Portal.Spawn)
+        Remote:FireServer("Teleport", Workspace.Worlds["The Overworld"].Islands["Floating Island"].Island.Portal.Spawn)
     end,
 })
 
 teleportTab:CreateButton({
     Name = "Outer Space",
     Callback = function()
-        Remote:FireServer("Teleport", Workspace.Worlds["The Overworld"].Islands["Outer Space"]Island.Portal.Spawn)
+        Remote:FireServer("Teleport", Workspace.Worlds["The Overworld"].Islands["Outer Space"].Island.Portal.Spawn)
     end,
 })
 
@@ -158,7 +158,7 @@ teleportTab:CreateButton({
 teleportTab:CreateButton({
     Name = "The Void",
     Callback = function()
-        Remote:FireServer("Teleport", Workspace.Worlds["The Overworld"].Islands["The Void"]Island.Portal.Spawn)
+        Remote:FireServer("Teleport", Workspace.Worlds["The Overworld"].Islands["The Void"].Island.Portal.Spawn)
     end,
 })
 
@@ -168,4 +168,3 @@ teleportTab:CreateButton({
         Remote:FireServer("Teleport", Workspace.Worlds["The Overworld"].Islands.Zen.Island.Portal.Spawn)
     end,
 })
---Hello

@@ -52,7 +52,7 @@ end
 local function teleportToSpawn()
 	Remote:FireServer("Teleport", "Workspace.Worlds.The Overworld.PortalSpawn")
 end
---h
+
 local function tweenToPosition(position)
 	local hrp = getHRP()
 	if not hrp then return end
@@ -65,16 +65,22 @@ end
 local EggFolder =  Workspace:WaitForChild("Rendered"):WaitForChild("Generic")
 
 local function goToEggsSequence(chosen)
+	print("[EggsSequence] Moving to:", chosen)
+
 	local infinityEggPos = EggFolder:WaitForChild("Infinity Egg").Position
 	local chosenEggPos = EggFolder[chosen].Position
 
 	if distanceTo(infinityEggPos) > 50 then
+		print("[EggsSequence] Far from Infinity Egg. Teleporting to spawn...")
 		teleportToSpawn()
 		task.wait(2)
 	end
 
+	print("[EggsSequence] Tweening to Infinity Egg...")
 	tweenToPosition(infinityEggPos)
 	task.wait(2)
+
+	print("[EggsSequence] Tweening to chosen egg:", chosen)
 	tweenToPosition(chosenEggPos)
 end
 
@@ -83,20 +89,24 @@ local function checkChallengeList(challengeFrame)
 		if challenge:IsA("Frame") and challenge:FindFirstChild("Content") then
 			local completedFrame = challenge:FindFirstChild("Completed")
 			if completedFrame and completedFrame:IsA("Frame") and completedFrame.Visible then
+				print("[Challenge] Skipped completed challenge.")
 				continue
 			end
 
 			local label = challenge.Content:FindFirstChild("Label")
 			if label and label:IsA("TextLabel") then
 				local text = label.Text
+				print("[Challenge] Found:", text)
 
 				if string.find(text, "Hatch") and string.find(text, "Rare") then
+					print("[Challenge] Matched Rare Hatch challenge. Going to Iceshard Egg.")
 					goToEggsSequence("Iceshard Egg")
-				end
-				if string.find(text, "Hatch") and string.find(text, "Legendary") then
+				elseif string.find(text, "Hatch") and string.find(text, "Legendary") then
+					print("[Challenge] Matched Legendary Hatch challenge. Going to Spikey Egg.")
 					goToEggsSequence("Spikey Egg")
+				else
+					print("[Challenge] No match for:", text)
 				end
-				-- Add more conditions as needed
 			end
 		end
 	end

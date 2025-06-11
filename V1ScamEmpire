@@ -6,7 +6,7 @@ local Window = Rayfield:CreateWindow({
    LoadingTitle = "Bubble Gum Simulator Infinity",
    LoadingSubtitle = "by Austin Scripts",
    Theme = "Default",
---lll
+
    ToggleUIKeybind = "K",
 
    ConfigurationSaving = {
@@ -86,15 +86,14 @@ end
 
 local function checkChallengeList(challengeFrame)
 	print("[AutoSeason] Running checkChallengeList...")
+	print("[AutoSeason] challengeFrame Children:", #challengeFrame:GetChildren())
 
 	for _, challenge in ipairs(challengeFrame:GetChildren()) do
-		print("[Challenge] Checking:", challenge.Name)
+		if challenge:IsA("Frame") and challenge:FindFirstChild("Content") and challenge:FindFirstChild("Completed") then
+			print("[Challenge] Valid challenge frame:", challenge.Name)
 
-		if challenge:IsA("Frame") and challenge:FindFirstChild("Content") then
 			local completedFrame = challenge:FindFirstChild("Completed")
-			print("[Challenge] Found Content. Completed visible:", completedFrame and completedFrame.Visible)
-
-			if completedFrame and completedFrame:IsA("Frame") and completedFrame.Visible then
+			if completedFrame.Visible then
 				print("[Challenge] Skipping completed challenge:", challenge.Name)
 				continue
 			end
@@ -115,7 +114,7 @@ local function checkChallengeList(challengeFrame)
 					print("[Challenge] No match for:", lowerText)
 				end
 			else
-				print("[Challenge] No Label found in:", challenge.Name)
+				print("[Challenge] No Label in:", challenge.Name)
 			end
 		else
 			print("[Challenge] Not a valid challenge frame:", challenge.Name)

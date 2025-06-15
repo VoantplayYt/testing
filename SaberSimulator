@@ -186,7 +186,7 @@ local autoKill = autoTab:CreateToggle({
 	Flag = "Kill",
 	CurrentValue = false,
 	Callback = function(Value)
-		AutoKill = CurrentValue
+		AutoKill = Value
 		task.spawn(function()
 			while AutoKill do
 				local root = getHRP()
@@ -211,7 +211,7 @@ local autoBuy = autoTab:CreateToggle({
     Flag = "Buy",
     CurrentValue = false,
     Callback = function(Value)
-        AutoBuy = CurrentValue
+        AutoBuy = Value
         while AutoBuy do
             shopFrame.Visible = true
             shopFrame.Frames.Visible = false
@@ -263,30 +263,32 @@ local autoSell = autoTab:CreateToggle({
    end,
 })
 
-local autoFlags = autoTab:CreateToggle({
+local autoFlag = autoTab:CreateToggle({
    Name = "Auto Flag",
    Flag = "Flags",
    CurrentValue = false,
    Callback = function(Value)
-    AutoFlags = CurrentValue
+      AutoFlags = Value
 
-    if AutoFlags then
-        hbConn = RunService.Heartbeat:Connect(function()
+      if AutoFlags then
+         hbConn = RunService.Heartbeat:Connect(function()
             if not capturing then
-                local target = findNextFlag()
-                capturing = true
-                captureFlag(target)
-                capturing = false
+               local target = findNextFlag()
+               if target then
+                  capturing = true
+                  captureFlag(target)
+                  capturing = false
+               end
             end
-        end)
-    else
-        if hbConn then
+         end)
+      else
+         if hbConn then
             hbConn:Disconnect()
             hbConn = nil
-        end
-        capturing = false
-    end
-end,
+         end
+         capturing = false
+      end
+   end,
 })
 
 local autoTimed = autoTab:CreateToggle({

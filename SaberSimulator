@@ -93,6 +93,20 @@ local function captureFlag(flagModel)
     capturing = false
 end
 
+local function getOtherPlayers()
+	local others = {}
+	for _, p in pairs(Players:GetPlayers()) do
+		if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p.Character:FindFirstChild("Humanoid") then
+			local hrp = p.Character.HumanoidRootPart
+			local hum = p.Character.Humanoid
+			if hum.Health > 0 then
+				table.insert(others, p)
+			end
+		end
+	end
+	return others
+end
+
 local function getHRP()
 	return player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 end
@@ -111,6 +125,7 @@ local AutoSell = false
 local AutoStrength = false
 local AutoBuy = false
 local AutoTimed = false
+local AutoKill = false
 
 local lastSwingTime = 0
 local swingDelay = 0.1
@@ -155,6 +170,31 @@ local autoPickup = autoTab:CreateToggle({
          task.wait(0.1)
       end
    end,
+})
+
+local autoKill = autoTab:CreateToggle({
+	Name = "Auto Kill",
+	Flag = "Kill",
+	CurrentValue = false,
+	Callback = function(Value)
+		AutoKill = CurrentValue
+		task.spawn(function()
+			while AutoKill do
+				local root = getHRP()
+				if root then
+					for _, target in pairs(getOtherPlayers()) do
+						local theirRoot = target.Character.HumanoidRootPart
+						if (theirRoot.Position - root.Position).Magnitude <= killDistance then
+							-- TP behind or on top
+							root.CFrame = theirRoot.CFrame * CFrame.new(0, 0, 2)
+							Remotes.SwingSaber:FireServer()
+						end
+					end
+				end
+				task.wait(0.05)
+			end
+		end)
+	end,
 })
 
 local autoBuy = autoTab:CreateToggle({

@@ -1,0 +1,293 @@
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "Saber Simulator | Austin Scripts",
+   Icon = "blinds",
+   LoadingTitle = "Saber Simulator",
+   LoadingSubtitle = "by Austin Scripts",
+   Theme = "Default",
+
+   ToggleUIKeybind = "K",
+
+   ConfigurationSaving = {
+      Enabled = false,
+      FolderName = nil,
+      FileName = "SaberSimulator"
+   },
+
+   Discord = {
+      Enabled = true,
+      Invite = "tMTpDsGcdT",
+      RememberJoins = true
+   },
+   KeySystem = false,
+})
+
+--// Services \\--
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+--// Vars \\--
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+local Remotes = ReplicatedStorage:WaitForChild("Events")
+
+local flagsFolder = workspace:WaitForChild("Gameplay").Flags
+
+local ownedFlags = {}
+local capturing = false 
+local hbConn
+
+local function teleportAbove(basePart)
+    local char = player.Character or player.CharacterAdded:Wait()
+    local rootPart = char:WaitForChild("HumanoidRootPart")
+    rootPart.CFrame = basePart.CFrame + Vector3.new(0, 5, 0)
+end
+
+local function findNextFlag()
+    for _, model in ipairs(flagsFolder:GetChildren()) do
+        if model:IsA("Model") then
+            local owner = model:GetAttribute("OwnerName")
+            if owner ~= player.Name then
+                return model
+            end
+        end
+    end
+    return nil
+end
+
+local function captureFlag(flagModel)
+    local base = flagModel:FindFirstChild("Base")
+    if not base then return end          -- safety check
+
+    capturing = true
+    teleportAbove(base)
+
+    -- wait until player owns the flag AND CapValue hits 10
+    local captured = false
+    local function checkDone()
+        if flagModel:GetAttribute("OwnerName") == player.Name
+           and (flagModel:GetAttribute("CapValue") or 0) >= 10 then
+            captured = true
+        end
+    end
+    checkDone()
+
+    -- listen for attribute changes
+    local capConn = flagModel:GetAttributeChangedSignal("CapValue"):Connect(checkDone)
+    local ownerConn = flagModel:GetAttributeChangedSignal("OwnerName"):Connect(checkDone)
+
+    while not captured and AutoFlag do
+        RunService.Heartbeat:Wait()
+    end
+
+    capConn:Disconnect()
+    ownerConn:Disconnect()
+
+    if captured then
+        ownedFlags[flagModel] = true      -- record ownership
+    end
+    capturing = false
+end
+
+local function getHRP()
+	return player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+end
+
+local function distanceTo(position)
+	return (HumanoidRootPart.Position - position).Magnitude
+end
+
+local function l(player, part)
+    firetouchinterest(player, part, 0)
+end
+
+local AutoPickup = false
+local AutoFlags = false
+local AutoSell = false
+local AutoStrength = false
+local AutoBuy = false
+local AutoTimed = false
+
+local lastSwingTime = 0
+local swingDelay = 0.1
+local heartbeatConnection
+
+--// Tabs \\--
+local infoTab = Window:CreateTab("Info")
+local autoTab = Window:CreateTab("Auto")
+local hatchTab = Window:CreateTab("Hatch")
+local teleportTab = Window:CreateTab("Teleports")
+
+--// misc \\--
+infoTab:CreateLabel("Info")
+
+local Divider = infoTab:CreateDivider()
+
+local destroyGui = infoTab:CreateButton({
+    Name = "Destroy UI",
+    Callback = function()
+        Rayfield:Destroy()
+    end,
+})
+
+--// auto \\--
+autoTab:CreateLabel("Autos")
+autoTab:CreateDivider()
+
+local autoPickup = autoTab:CreateToggle({
+   Name = "Auto Pickup",
+   Flag = "Pickup",
+   CurrentValue = false,
+   Callback = function(Value)
+      AutoPickup = Value
+      while AutoPickup do
+        local displayFrame = playerGui:WaitForChild("MainGui"):WaitForChild("EffectsFrame")
+        displayFrame.Visble = false
+        local rootPart = getHRP()
+        local items = workspace.Gameplay.CurrencyPickup.CurrencyHolder:GetChildren()
+	    for _, item in ipairs(items) do
+		    l(rootPart, item)
+	    end
+         task.wait(0.1)
+      end
+   end,
+})
+
+local autoBuy = autoTab:CreateToggle({
+    Name = "Auto Buy",
+    Flag = "Buy",
+    CurrentValue = false,
+    Callback = function(Value)
+        AutoBuy = CurrentValue
+        while AutoBuy do
+            Remotes.UIAction:FireServer("BuyAllWeapons")
+            wait()
+            Remotes.UIAction:FireServer("BuyAllDNAs")
+            task.wait(0.5)
+        end
+    end,
+})
+
+local autoStrenth = autoTab:CreateToggle({
+	Name = "Auto Strength",
+	Flag = "Strength",
+	CurrentValue = false,
+	Callback = function(Value)
+		AutoStrength = Value
+
+		if AutoStrength then
+			lastSwingTime = os.clock()
+			heartbeatConnection = RunService.Heartbeat:Connect(function()
+				if os.clock() - lastSwingTime >= swingDelay then
+					Remotes.SwingSaber:FireServer()
+					lastSwingTime = os.clock()
+				end
+			end)
+		else
+			if heartbeatConnection then
+				heartbeatConnection:Disconnect()
+				heartbeatConnection = nil
+			end
+		end
+	end,
+})
+
+local autoSell = autoTab:CreateToggle({
+   Name = "Auto Sell",
+   Flag = "Sell",
+   CurrentValue = false,
+   Callback = function(Value)
+      AutoSell = Value
+      while AutoSell do
+         Remotes.SellStrength:FireServer()
+         task.wait(0.25)
+      end
+   end,
+})
+
+local autoFlags = autoTab:CreateToggle({
+   Name = "Auto Flag",
+   Flag = "Flags",
+   CurrentValue = false,
+   Callback = function(Value)
+      AutoFlags = Value
+      while AutoFlags do
+          hbConn = RunService.Heartbeat:Connect(function()
+                if not capturing then
+                    local target = findNextFlag()
+                    if target then
+                        task.spawn(captureFlag, target)
+                    end
+                end
+            end)
+        else
+            if hbConn then hbConn:Disconnect() hbConn = nil end
+            capturing = false
+        end
+      end
+   end,
+})
+
+local autoTimed = autoTab:CreateToggle({
+   Name = "Auto Rewards",
+   Flag = "Timed",
+   CurrentValue = false,
+   Callback = function(Value)
+      AutoTimed = Value
+      while AutoTimed do
+         Remotes.UIAction:FireServer("ClaimDailyTimedRewards")
+         wait()
+         Remotes.UIAction:FireServer("ClaimDailyReward")
+         task.wait(30)
+      end
+   end,
+})
+
+--// teleport \\--
+teleportTab:CreateLabel("The Overwold")
+
+teleportTab:CreateButton({
+    Name = "Spawn",
+    Callback = function()
+        
+    end,
+})
+
+teleportTab:CreateButton({
+    Name = "Floating Island",
+    Callback = function()
+        
+    end,
+})
+
+teleportTab:CreateButton({
+    Name = "Outer Space",
+    Callback = function()
+        
+    end,
+})
+
+teleportTab:CreateButton({
+    Name = "Twilight",
+    Callback = function()
+        
+    end,
+})
+
+teleportTab:CreateButton({
+    Name = "The Void",
+    Callback = function()
+        
+    end,
+})
+
+teleportTab:CreateButton({
+    Name = "Zen",
+    Callback = function()
+        
+    end,
+})
+
+teleportTab:CreateDivider()

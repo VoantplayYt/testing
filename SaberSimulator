@@ -1,5 +1,5 @@
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
---hi
+
 local Window = Rayfield:CreateWindow({
    Name = "Saber Simulator | Austin Scripts",
    Icon = "blinds",
@@ -43,19 +43,25 @@ local hbConn
 
 local function teleportAbove(basePart)
     local char = player.Character or player.CharacterAdded:Wait()
-    local rootPart = char:WaitForChild("HumanoidRootPart")
-    rootPart.CFrame = basePart.CFrame + Vector3.new(0, 5, 0)
+    char:WaitForChild("HumanoidRootPart")
+    local rootPart = char.HumanoidRootPart
+    if rootPart and basePart then
+        rootPart.CFrame = basePart.CFrame + Vector3.new(0, 5, 0)
+    end
 end
 
 local function findNextFlag()
     for _, model in ipairs(flagsFolder:GetChildren()) do
         if model:IsA("Model") then
             local owner = model:GetAttribute("OwnerName")
+            print("Checking flag:", model.Name, "Owned by:", owner)
             if owner ~= player.Name then
+                print("Found capturable flag:", model.Name)
                 return model
             end
         end
     end
+    print("No capturable flags found.")
     return nil
 end
 
@@ -268,9 +274,9 @@ local autoFlags = autoTab:CreateToggle({
         hbConn = RunService.Heartbeat:Connect(function()
             if not capturing then
                 local target = findNextFlag()
-                if target then
-                    task.spawn(captureFlag, target)
-                end
+                capturing = true
+                captureFlag(target)
+                capturing = false
             end
         end)
     else

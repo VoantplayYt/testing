@@ -6,7 +6,7 @@ local Window = Rayfield:CreateWindow({
    LoadingTitle = "Saber Simulator",
    LoadingSubtitle = "by Austin Scripts",
    Theme = "Default",
---ddsfgsdf
+
    ToggleUIKeybind = "K",
 
    ConfigurationSaving = {
@@ -59,34 +59,36 @@ end
 
 local function captureFlag(flagModel)
     local base = flagModel:FindFirstChild("Base")
-    if not base then return end          -- safety check
+    if not base then return end -- safety
 
     capturing = true
-    teleportAbove(base)
 
-    -- wait until player owns the flag AND CapValue hits 10
     local captured = false
+
     local function checkDone()
-        if flagModel:GetAttribute("OwnerName") == player.Name
-           and (flagModel:GetAttribute("CapValue") or 0) >= 10 then
+        local owner = flagModel:GetAttribute("OwnerName")
+        local cap = flagModel:GetAttribute("CapValue") or 0
+        if owner == player.Name and cap >= 10 then
             captured = true
         end
     end
-    checkDone()
 
-    -- listen for attribute changes
+    -- Listen for updates
     local capConn = flagModel:GetAttributeChangedSignal("CapValue"):Connect(checkDone)
     local ownerConn = flagModel:GetAttributeChangedSignal("OwnerName"):Connect(checkDone)
 
-    while not captured and AutoFlag do
-        RunService.Heartbeat:Wait()
+    -- Loop while not captured
+    while not captured and AutoFlags do
+        teleportAbove(base)
+        checkDone()
+        task.wait(0.5)
     end
 
     capConn:Disconnect()
     ownerConn:Disconnect()
 
     if captured then
-        ownedFlags[flagModel] = true      -- record ownership
+        ownedFlags[flagModel] = true
     end
     capturing = false
 end
@@ -143,7 +145,7 @@ local autoPickup = autoTab:CreateToggle({
    Callback = function(Value)
       AutoPickup = Value
       while AutoPickup do
-        local displayFrame = playerGui:WaitForChild("MainGui"):WaitForChild("EffectsFrame")
+        local displayFrame = playerGui.MainGui.EffectsFrame
         displayFrame.Visble = false
         local rootPart = getHRP()
         local items = workspace.Gameplay.CurrencyPickup.CurrencyHolder:GetChildren()

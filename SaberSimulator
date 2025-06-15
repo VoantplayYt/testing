@@ -212,22 +212,25 @@ local autoFlags = autoTab:CreateToggle({
    Flag = "Flags",
    CurrentValue = false,
    Callback = function(Value)
-      AutoFlags = Value
-      while AutoFlags do
-          hbConn = RunService.Heartbeat:Connect(function()
-                if not capturing then
-                    local target = findNextFlag()
-                    if target then
-                        task.spawn(captureFlag, target)
-                    end
+    AutoFlags = Value
+
+    if AutoFlags then
+        hbConn = RunService.Heartbeat:Connect(function()
+            if not capturing then
+                local target = findNextFlag()
+                if target then
+                    task.spawn(captureFlag, target)
                 end
-            end)
-        else
-            if hbConn then hbConn:Disconnect() hbConn = nil end
-            capturing = false
+            end
+        end)
+    else
+        if hbConn then
+            hbConn:Disconnect()
+            hbConn = nil
         end
-      end
-   end,
+        capturing = false
+    end
+end,
 })
 
 local autoTimed = autoTab:CreateToggle({

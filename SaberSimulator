@@ -119,6 +119,9 @@ local function l(player, part)
     firetouchinterest(player, part, 0)
 end
 
+        local displayFrame = playerGui.MainGui.EffectsFrame
+        displayFrame.Visible = false
+
 local AutoPickup = false
 local AutoFlags = false
 local AutoSell = false
@@ -160,8 +163,6 @@ local autoPickup = autoTab:CreateToggle({
    Callback = function(Value)
       AutoPickup = Value
       while AutoPickup do
-        local displayFrame = playerGui.MainGui.EffectsFrame
-        displayFrame.Visble = false
         local rootPart = getHRP()
         local items = workspace.Gameplay.CurrencyPickup.CurrencyHolder:GetChildren()
 	    for _, item in ipairs(items) do

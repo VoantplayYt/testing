@@ -1,5 +1,5 @@
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
---hillo
+
 local Window = Rayfield:CreateWindow({
    Name = "Saber Simulator | Austin Scripts",
    Icon = "blinds",
@@ -33,6 +33,8 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 local Remotes = ReplicatedStorage:WaitForChild("Events")
 
+local effectsFrame = playerGui:WaitForChild("MainGui"):WaitForChild("EffectsFrame")
+local shopFrame = playerGui:WaitForChild("MainGui"):WaitForChild("OtherFrames"):WaitForChild("Shop")
 local flagsFolder = workspace:WaitForChild("Gameplay").Flags
 
 local ownedFlags = {}
@@ -119,9 +121,6 @@ local function l(player, part)
     firetouchinterest(player, part, 0)
 end
 
-        local displayFrame = playerGui.MainGui.EffectsFrame
-        displayFrame.Visible = false
-
 local AutoPickup = false
 local AutoFlags = false
 local AutoSell = false
@@ -133,6 +132,8 @@ local AutoKill = false
 local lastSwingTime = 0
 local swingDelay = 0.1
 local heartbeatConnection
+
+local killDistance = 20
 
 --// Tabs \\--
 local infoTab = Window:CreateTab("Info")
@@ -163,6 +164,7 @@ local autoPickup = autoTab:CreateToggle({
    Callback = function(Value)
       AutoPickup = Value
       while AutoPickup do
+        effectsFrame.Visible = false
         local rootPart = getHRP()
         local items = workspace.Gameplay.CurrencyPickup.CurrencyHolder:GetChildren()
 	    for _, item in ipairs(items) do
@@ -205,6 +207,11 @@ local autoBuy = autoTab:CreateToggle({
     Callback = function(Value)
         AutoBuy = CurrentValue
         while AutoBuy do
+            shopFrame.Visible = true
+            shopFrame.Frames.Visible = false
+            shopFrame.TopBar.Visible = false
+            shopFrame.TopButtons.Visible = false
+            shopFrame.BKG.Visible = false
             Remotes.UIAction:FireServer("BuyAllWeapons")
             wait()
             Remotes.UIAction:FireServer("BuyAllDNAs")
@@ -255,7 +262,7 @@ local autoFlags = autoTab:CreateToggle({
    Flag = "Flags",
    CurrentValue = false,
    Callback = function(Value)
-    AutoFlags = Value
+    AutoFlags = CurrentValue
 
     if AutoFlags then
         hbConn = RunService.Heartbeat:Connect(function()

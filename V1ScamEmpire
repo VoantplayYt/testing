@@ -1,5 +1,3 @@
--- LocalScript (put it inside Admin ScreenGui or StarterPlayerScripts)
---..dfdsfsdfsdfdsfdsfsdfsdfdsfsdf
 --// Services & short‑cuts
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -8,69 +6,11 @@ local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
 --// GUI elements (must already exist)
-local AdminGui = PlayerGui:WaitForChild("Admin")                 -- ScreenGui
-local ItemsFrame = AdminGui:WaitForChild("Items")                  -- Frame with UIListLayout
-local SpawnButton = AdminGui:WaitForChild("Spawn")            -- TextButton
+local AdminGui = PlayerGui:WaitForChild("Spawn")                 -- ScreenGui                 -- Frame with UIListLayout
+local SpawnButton = AdminGui:WaitForChild("Button")            -- TextButton
 
---// Game assets
-local LootRoot = ReplicatedStorage:WaitForChild("Loot")
-local RarityColor = require(ReplicatedStorage.Modules.RarityColor)
-local SpawnRemote = ReplicatedStorage:WaitForChild("Events"):WaitForChild("admincommands"):WaitForChild("SpawnItem")
-local selectedItem = nil                                             -- userdata reference
+local SpawnRemote = ReplicatedStorage:WaitForChild("Events"):WaitForChild("admincommands"):WaitForChild("SpawnItem")                                         -- userdata reference
 
----------------------------------------------------------------------
--- Helper: create a single button for an item and wire its click
----------------------------------------------------------------------
-local function createItemButton(item, tint)
-    local button = Instance.new("TextButton")
-    button.Name = item.Name
-    button.Size = UDim2.new(1, 0, 0, 28)
-    button.BorderSizePixel = 0
-    button.Text = item.Name
-    button.TextScaled = true
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.Parent = ItemsFrame
-
-    button.MouseButton1Click:Connect(function()
-        selectedItem = item
-        -- simple visual feedback: lighten the chosen button, reset others
-        for _, child in ipairs(ItemsFrame:GetChildren()) do
-            if child:IsA("TextButton") then
-                child.BackgroundTransparency = (child == button) and 0.3 or 0
-            end
-        end
-    end)
-end
-
----------------------------------------------------------------------
--- Recursive folder walk to find every leaf “item” and make a button
----------------------------------------------------------------------
-local function populateFromFolder(folder)
-    for _, child in ipairs(folder:GetChildren()) do
-        if #child:GetChildren() == 0 then
-            -- Treat empty/numeric leaf parts as spawnable items
-            createItemButton(child, RarityColor.GetColor(folder.Name))
-        else
-            -- Go deeper (handles categories, sub‑categories, etc.)
-            populateFromFolder(child)
-        end
-    end
-end
-
----------------------------------------------------------------------
--- Build UI list once at start‑up
----------------------------------------------------------------------
-populateFromFolder(LootRoot)
-
----------------------------------------------------------------------
--- Handle Spawn button
----------------------------------------------------------------------
 SpawnButton.MouseButton1Click:Connect(function()
-    if not selectedItem then
-        warn("No item selected.")
-        return
-    end
-
-    -- Amount hard‑coded to 1 (change if you later add an Amount textbox)
-    SpawnRemote:FireServer(selectedItem, LocalPlayer, 1)
+    SpawnRemote:FireServer(ReplicatedStorage.Loot["Limited Time"].Summer.Godly["Tan Skinwalker"], LocalPlayer, 1)
 end)

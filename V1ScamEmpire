@@ -1,26 +1,21 @@
 -- LocalScript (put it inside Admin ScreenGui or StarterPlayerScripts)
 
 --// Services & short‑cuts
-local Players            = game:GetService("Players")
-local ReplicatedStorage  = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local LocalPlayer  = Players.LocalPlayer
-local PlayerGui    = LocalPlayer:WaitForChild("PlayerGui")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
 --// GUI elements (must already exist)
-local AdminGui     = PlayerGui:WaitForChild("Admin")                 -- ScreenGui
-local ItemsFrame   = AdminGui:WaitForChild("Items")                  -- Frame with UIListLayout
-local SpawnButton  = AdminGui:WaitForChild("Spawn")            -- TextButton
+local AdminGui = PlayerGui:WaitForChild("Admin")                 -- ScreenGui
+local ItemsFrame = AdminGui:WaitForChild("Items")                  -- Frame with UIListLayout
+local SpawnButton = AdminGui:WaitForChild("Spawn")            -- TextButton
 
 --// Game assets
-local LootRoot     = ReplicatedStorage:WaitForChild("Loot")
-local RarityColor  = require(ReplicatedStorage.Modules.RarityColor)
-local SpawnRemote  = ReplicatedStorage
-                     :WaitForChild("Events")
-                     :WaitForChild("admincommands")
-                     :WaitForChild("SpawnItem")
-
---// Runtime state
+local LootRoot = ReplicatedStorage:WaitForChild("Loot")
+local RarityColor = require(ReplicatedStorage.Modules.RarityColor)
+local SpawnRemote = ReplicatedStorage:WaitForChild("Events"):WaitForChild("admincommands"):WaitForChild("SpawnItem")
 local selectedItem = nil                                             -- userdata reference
 
 ---------------------------------------------------------------------
@@ -28,14 +23,13 @@ local selectedItem = nil                                             -- userdata
 ---------------------------------------------------------------------
 local function createItemButton(item, tint)
     local button = Instance.new("TextButton")
-    button.Name              = item.Name
-    button.Size              = UDim2.new(1, 0, 0, 28)
-    button.BackgroundColor3  = tint
-    button.BorderSizePixel   = 0
-    button.Text              = item.Name
-    button.TextScaled        = true
-    button.TextColor3        = Color3.fromRGB(255, 255, 255)
-    button.Parent            = ItemsFrame
+    button.Name = item.Name
+    button.Size = UDim2.new(1, 0, 0, 28)
+    button.BorderSizePixel = 0
+    button.Text = item.Name
+    button.TextScaled = true
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.Parent = ItemsFrame
 
     button.MouseButton1Click:Connect(function()
         selectedItem = item

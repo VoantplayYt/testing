@@ -1,5 +1,5 @@
 -- LocalScript (put it inside Admin ScreenGui or StarterPlayerScripts)
-
+--..dfdsfsdfsdfdsfdsfsdfsdfdsfsdf
 --// Services & short‑cuts
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

@@ -3,7 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
 
 -- Security check: only allow certain users
-if LocalPlayer.Name ~= "UmmmOkayWhat" and LocalPlayer.Name ~= "soglows12" then return end
+if LocalPlayer.Name ~= "Snatchbot5" and LocalPlayer.Name ~= "soglows12" then return end
 
 -- Modules
 local RarityColor = require(ReplicatedStorage:WaitForChild("Modules"):WaitForChild("RarityColor"))

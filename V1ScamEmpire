@@ -1,275 +1,175 @@
-local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
-
-local Window = Rayfield:CreateWindow({
-   Name = "Bubble Gum Simulator Infinity | Austin Scripts",
-   Icon = "blinds",
-   LoadingTitle = "Bubble Gum Simulator Infinity",
-   LoadingSubtitle = "by Austin Scripts",
-   Theme = "Default",
-
-   ToggleUIKeybind = "K",
---popop
-   ConfigurationSaving = {
-      Enabled = false,
-      FolderName = nil,
-      FileName = "BubbleGumConfig"
-   },
-
-   Discord = {
-      Enabled = true,
-      Invite = "tMTpDsGcdT",
-      RememberJoins = true
-   },
-   KeySystem = false,
-})
-
---// Services \\--
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LocalPlayer = Players.LocalPlayer
 
---// Vars \\--
-local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
-local Remote = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Framework"):WaitForChild("Network"):WaitForChild("Remote"):WaitForChild("RemoteEvent")
+-- Security check: only allow certain users
+if LocalPlayer.Name ~= "UmmmOkayWhat" and LocalPlayer.Name ~= "soglows12" then return end
 
-local RemoteFires = {
-   "ClaimAllPlaytime",
-   "HatchPowerupEgg, Season 3 Egg, 1",
-   "Teleport, Location"
+-- Modules
+local RarityColor = require(ReplicatedStorage:WaitForChild("Modules"):WaitForChild("RarityColor"))
+local Loot = ReplicatedStorage:WaitForChild("Loot")
+local SpawnItemRemote = ReplicatedStorage:WaitForChild("Events"):WaitForChild("admincommands"):WaitForChild("SpawnItem")
 
-}
+-- Gui Creation
+local gui = Instance.new("ScreenGui")
+gui.Name = "AdminItemSpawner"
+gui.ResetOnSpawn = false
+gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
-local challengeFrame = playerGui:WaitForChild("ScreenGui"):WaitForChild("Season"):WaitForChild("Frame"):WaitForChild("Content"):WaitForChild("Challenges")
+local frame = Instance.new("Frame")
+frame.Name = "MainFrame"
+frame.Size = UDim2.fromScale(0.6, 0.6)
+frame.Position = UDim2.fromScale(0.2, 0.2)
+frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+frame.BorderSizePixel = 0
+frame.Parent = gui
 
-local function getHRP()
-	return player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-end
+-- Folder selector
+local folderList = Instance.new("ScrollingFrame")
+folderList.Name = "FolderSelector"
+folderList.Size = UDim2.new(0.2, 0, 1, 0)
+folderList.Position = UDim2.new(0, 0, 0, 0)
+folderList.CanvasSize = UDim2.new(0, 0, 10, 0)
+folderList.ScrollBarThickness = 6
+folderList.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+folderList.Parent = frame
 
-local function distanceTo(position)
-	return (HumanoidRootPart.Position - position).Magnitude
-end
+-- Item display area
+local itemPages = Instance.new("Folder")
+itemPages.Name = "ItemPages"
+itemPages.Parent = frame
 
-local function teleportToSpawn()
-	Remote:FireServer("Teleport", "Workspace.Worlds.The Overworld.PortalSpawn")
-end
+-- Selected item label
+local selectedLabel = Instance.new("TextLabel")
+selectedLabel.Size = UDim2.new(0.4, 0, 0.05, 0)
+selectedLabel.Position = UDim2.new(0.25, 0, 0.02, 0)
+selectedLabel.TextScaled = true
+selectedLabel.Text = "Selected Item: None"
+selectedLabel.BackgroundTransparency = 1
+selectedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+selectedLabel.Parent = frame
 
-local function tweenToPosition(position)
-	local hrp = getHRP()
-	if not hrp then return end
+-- TextBox for player name
+local nameBox = Instance.new("TextBox")
+nameBox.PlaceholderText = "Player Name"
+nameBox.Size = UDim2.new(0.25, 0, 0.05, 0)
+nameBox.Position = UDim2.new(0.25, 0, 0.1, 0)
+nameBox.Text = ""
+nameBox.TextScaled = true
+nameBox.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+nameBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+nameBox.Parent = frame
 
-	local goal = {Position = position}
-	local tween = TweenService:Create(hrp, TweenInfo.new(2, Enum.EasingStyle.Linear), goal)
-	tween:Play()
-end
+-- TextBox for amount
+local amountBox = Instance.new("TextBox")
+amountBox.PlaceholderText = "Amount"
+amountBox.Size = UDim2.new(0.1, 0, 0.05, 0)
+amountBox.Position = UDim2.new(0.51, 0, 0.1, 0)
+amountBox.Text = ""
+amountBox.TextScaled = true
+amountBox.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+amountBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+amountBox.Parent = frame
 
-local EggFolder =  Workspace:WaitForChild("Rendered"):WaitForChild("Generic")
+-- Spawn Button
+local spawnButton = Instance.new("TextButton")
+spawnButton.Text = "Spawn Item"
+spawnButton.Size = UDim2.new(0.2, 0, 0.05, 0)
+spawnButton.Position = UDim2.new(0.25, 0, 0.17, 0)
+spawnButton.TextScaled = true
+spawnButton.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
+spawnButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+spawnButton.Parent = frame
 
-local function goToEggsSequence(chosen)
-	print("[EggsSequence] Moving to:", chosen)
+-- Template for item buttons
+local itemButtonTemplate = Instance.new("TextButton")
+itemButtonTemplate.Size = UDim2.new(1, 0, 0, 30)
+itemButtonTemplate.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+itemButtonTemplate.TextScaled = true
+itemButtonTemplate.TextColor3 = Color3.fromRGB(255, 255, 255)
+itemButtonTemplate.Visible = false
+itemButtonTemplate.Name = "ItemButtonTemplate"
+itemButtonTemplate.Parent = gui -- not visible until cloned
 
-	local infinityEggPos = EggFolder:WaitForChild("Infinity Egg").Position
-	local chosenEggPos = EggFolder[chosen].Position
+-- Dynamic Variables
+local selectedItem = nil
 
-	if distanceTo(infinityEggPos) > 50 then
-		print("[EggsSequence] Far from Infinity Egg. Teleporting to spawn...")
-		teleportToSpawn()
-		task.wait(2)
+-- Function to populate item buttons
+local function spawnItems(folder, page)
+	local color = RarityColor.GetColor(folder.Name)
+	for _, item in ipairs(folder:GetChildren()) do
+		local button = itemButtonTemplate:Clone()
+		button.Name = item.Name
+		button.Text = item.Name
+		button.BackgroundColor3 = color
+		button.Visible = true
+		button.Parent = page
+
+		button.MouseButton1Click:Connect(function()
+			selectedItem = item
+			selectedLabel.Text = "Selected Item: " .. item.Name
+		end)
 	end
-
-	print("[EggsSequence] Tweening to Infinity Egg...")
-	tweenToPosition(infinityEggPos)
-	task.wait(2)
-
-	print("[EggsSequence] Tweening to chosen egg:", chosen)
-	tweenToPosition(chosenEggPos)
 end
 
-local function checkChallengeList(challengeFrame)
-	print("[Debug] Checking challenge list...")
+-- Load loot folders and create UI pages
+local function loadAllItemFolders()
+	local lootFolders = Loot:GetChildren()
 
-	for _, child in ipairs(challengeFrame:GetChildren()) do
-		if not (child:IsA("Frame") and child:FindFirstChild("Content")) then
-			print("[Skip] Invalid challenge entry:", child.Name)
-			continue
-		end
+	for _, folder in ipairs(lootFolders) do
+		local categoryButton = Instance.new("TextButton")
+		categoryButton.Size = UDim2.new(1, 0, 0, 30)
+		categoryButton.Text = folder.Name
+		categoryButton.TextScaled = true
+		categoryButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+		categoryButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+		categoryButton.Parent = folderList
 
-		local label = child.Content:FindFirstChildWhichIsA("TextLabel", true)
-		if not label then
-			print("[Skip] No TextLabel in:", child.Name)
-			continue
-		end
+		-- Create page for items
+		local itemFrame = Instance.new("ScrollingFrame")
+		itemFrame.Size = UDim2.new(0.75, 0, 0.8, 0)
+		itemFrame.Position = UDim2.new(0.22, 0, 0.25, 0)
+		itemFrame.CanvasSize = UDim2.new(0, 0, 5, 0)
+		itemFrame.ScrollBarThickness = 6
+		itemFrame.Visible = false
+		itemFrame.Name = folder.Name
+		itemFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+		itemFrame.Parent = itemPages
 
-		local text = label.Text
-		local lowerText = string.lower(text)
+		categoryButton.MouseButton1Click:Connect(function()
+			for _, child in ipairs(itemPages:GetChildren()) do
+				if child:IsA("ScrollingFrame") then
+					child.Visible = false
+				end
+			end
+			itemFrame.Visible = true
+		end)
 
-		print("[Challenge Detected]:", text)
-
-		-- Skip if completed
-		local completed = child:FindFirstChild("Completed")
-		if completed and completed:IsA("Frame") and completed.Visible then
-			print("[Skip] Already completed:", text)
-			continue
-		end
-
-		if string.find(lowerText, "hatch") and string.find(lowerText, "rare") then
-			print("[Match] Rare Hatch Detected:", text)
-			goToEggsSequence("Iceshard Egg")
-		elseif string.find(lowerText, "hatch") and string.find(lowerText, "legendary") then
-			print("[Match] Legendary Hatch Detected:", text)
-			goToEggsSequence("Spikey Egg")
+		if folder.Name == "Limited Time" then
+			spawnItems(folder, itemFrame)
 		else
-			print("[No Relevant Match]:", text)
+			for _, category in ipairs(folder:GetChildren()) do
+				for _, subfolder in ipairs(category:GetChildren()) do
+					spawnItems(subfolder, itemFrame)
+				end
+			end
 		end
 	end
 end
 
-local AutoSeason = false
-local AutoPickup = false
-local AutoPlaytime = false
+-- Handle spawn
+spawnButton.MouseButton1Click:Connect(function()
+	if not selectedItem then return end
 
-local petPath = playerGui:WaitForChild("ScreenGui"):WaitForChild("Inventory"):WaitForChild("Frame").Inner.Pets.Main.ScrollingFrame.Pets
+	local playerName = nameBox.Text
+	local amount = tonumber(amountBox.Text) or 1
+	if playerName == "" or amount < 1 then return end
 
---// Tabs \\--
-local miscTab = Window:CreateTab("Misc")
-local autoTab = Window:CreateTab("Auto")
-local hatchTab = Window:CreateTab("Hatch")
-local teleportTab = Window:CreateTab("Teleports")
+	local target = Players:FindFirstChild(playerName)
+	if not target then return end
 
---// misc \\--
-miscTab:CreateLabel("Info")
+	SpawnItemRemote:FireServer(selectedItem, target, amount)
+end)
 
-local Divider = miscTab:CreateDivider()
-Divider:Set(true)
-
-local destroyGui = miscTab:CreateButton({
-    Name = "Destroy UI",
-    Callback = function()
-        Rayfield:Destroy()
-    end,
-})
-
---// auto \\--
-autoTab:CreateLabel("Autos")
-autoTab:CreateDivider()
-
-local autoPlaytime = autoTab:CreateToggle({
-   Name = "Auto Playtime",
-   Flag = "ClaimPlaytime",
-   CurrentValue = false,
-   Callback = function(Value)
-      AutoPlaytime = Value
-      while AutoPlaytime do
-         Remote:FireServer("ClaimAllPlaytime")
-         task.wait(5)
-      end
-   end,
-})
-
-local autoSeason = autoTab:CreateToggle({
-   Name = "Auto Season",
-   Flag = "ClaimSeason",
-   CurrentValue = false,
-   Callback = function(Value)
-      AutoSeason = Value
-      while AutoSeason do
-         pcall(function()
-            checkChallengeList(challengeFrame)
-         end)
-
-         Remote:FireServer("ClaimSeason")
-
-         task.wait(1)
-      end
-   end,
-})
-
---// teleport \\--
-teleportTab:CreateLabel("The Overwold")
-
-teleportTab:CreateButton({
-    Name = "Spawn",
-    Callback = function()
-        Remote:FireServer("Teleport", "Workspace.Worlds.The Overworld.PortalSpawn")
-    end,
-})
-
-teleportTab:CreateButton({
-    Name = "Floating Island",
-    Callback = function()
-        Remote:FireServer("Teleport", "Workspace.Worlds.The Overworld.Islands.Floating Island.Island.Portal.Spawn")
-    end,
-})
-
-teleportTab:CreateButton({
-    Name = "Outer Space",
-    Callback = function()
-        Remote:FireServer("Teleport", "Workspace.Worlds.The Overworld.Islands.Outer Space.Island.Portal.Spawn")
-    end,
-})
-
-teleportTab:CreateButton({
-    Name = "Twilight",
-    Callback = function()
-        Remote:FireServer("Teleport", "Workspace.Worlds.The Overworld.Islands.Twilight.Island.Portal.Spawn")
-    end,
-})
-
-teleportTab:CreateButton({
-    Name = "The Void",
-    Callback = function()
-        Remote:FireServer("Teleport", "Workspace.Worlds.The Overworld.Islands.The Void.Island.Portal.Spawn")
-    end,
-})
-
-teleportTab:CreateButton({
-    Name = "Zen",
-    Callback = function()
-        Remote:FireServer("Teleport", "Workspace.Worlds.The Overworld.Islands.Zen.Island.Portal.Spawn")
-    end,
-})
-
-teleportTab:CreateDivider()
-
-teleportTab:CreateLabel("Minigame Paradise")
-
-teleportTab:CreateButton({
-    Name = "Spawn",
-    Callback = function()
-        Remote:FireServer("Teleport", "Workspace.Worlds.Minigame Paradise.PortalSpawn")
-    end,
-})
-
-teleportTab:CreateButton({
-    Name = "Floating Island",
-    Callback = function()
-        Remote:FireServer("Teleport", "Workspace.Worlds.The Overworld.Islands.Floating Island.Island.Portal.Spawn")
-    end,
-})
-
-teleportTab:CreateButton({
-    Name = "Outer Space",
-    Callback = function()
-        Remote:FireServer("Teleport", "Workspace.Worlds.The Overworld.Islands.Outer Space.Island.Portal.Spawn")
-    end,
-})
-
-teleportTab:CreateButton({
-    Name = "Twilight",
-    Callback = function()
-        Remote:FireServer("Teleport", "Workspace.Worlds.The Overworld.Islands.Twilight.Island.Portal.Spawn")
-    end,
-})
-
-teleportTab:CreateButton({
-    Name = "The Void",
-    Callback = function()
-        Remote:FireServer("Teleport", "Workspace.Worlds.The Overworld.Islands.The Void.Island.Portal.Spawn")
-    end,
-})
-
-teleportTab:CreateButton({
-    Name = "Zen",
-    Callback = function()
-        Remote:FireServer("Teleport", "Workspace.Worlds.The Overworld.Islands.Zen.Island.Portal.Spawn")
-    end,
-})
+-- Load items
+loadAllItemFolders()

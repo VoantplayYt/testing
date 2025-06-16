@@ -1,175 +1,82 @@
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local LocalPlayer = Players.LocalPlayer
---66656456456456
--- Security check: only allow certain users
-if LocalPlayer.Name ~= "Snatchbot5" and LocalPlayer.Name ~= "soglows12" then return end
+-- LocalScript (put it inside Admin ScreenGui or StarterPlayerScripts)
 
--- Modules
-local RarityColor = require(ReplicatedStorage:WaitForChild("Modules"):WaitForChild("RarityColor"))
-local Loot = ReplicatedStorage:WaitForChild("Loot")
-local SpawnItemRemote = ReplicatedStorage:WaitForChild("Events"):WaitForChild("admincommands"):WaitForChild("SpawnItem")
+--// Services & short‑cuts
+local Players            = game:GetService("Players")
+local ReplicatedStorage  = game:GetService("ReplicatedStorage")
 
--- Gui Creation
-local gui = Instance.new("ScreenGui")
-gui.Name = "AdminItemSpawner"
-gui.ResetOnSpawn = false
-gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+local LocalPlayer  = Players.LocalPlayer
+local PlayerGui    = LocalPlayer:WaitForChild("PlayerGui")
 
-local frame = Instance.new("Frame")
-frame.Name = "MainFrame"
-frame.Size = UDim2.fromScale(0.6, 0.6)
-frame.Position = UDim2.fromScale(0.2, 0.2)
-frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-frame.BorderSizePixel = 0
-frame.Parent = gui
+--// GUI elements (must already exist)
+local AdminGui     = PlayerGui:WaitForChild("Admin")                 -- ScreenGui
+local ItemsFrame   = AdminGui:WaitForChild("Items")                  -- Frame with UIListLayout
+local SpawnButton  = AdminGui:WaitForChild("Spawn")            -- TextButton
 
--- Folder selector
-local folderList = Instance.new("ScrollingFrame")
-folderList.Name = "FolderSelector"
-folderList.Size = UDim2.new(0.2, 0, 1, 0)
-folderList.Position = UDim2.new(0, 0, 0, 0)
-folderList.CanvasSize = UDim2.new(0, 0, 10, 0)
-folderList.ScrollBarThickness = 6
-folderList.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-folderList.Parent = frame
+--// Game assets
+local LootRoot     = ReplicatedStorage:WaitForChild("Loot")
+local RarityColor  = require(ReplicatedStorage.Modules.RarityColor)
+local SpawnRemote  = ReplicatedStorage
+                     :WaitForChild("Events")
+                     :WaitForChild("admincommands")
+                     :WaitForChild("SpawnItem")
 
--- Item display area
-local itemPages = Instance.new("Folder")
-itemPages.Name = "ItemPages"
-itemPages.Parent = frame
+--// Runtime state
+local selectedItem = nil                                             -- userdata reference
 
--- Selected item label
-local selectedLabel = Instance.new("TextLabel")
-selectedLabel.Size = UDim2.new(0.4, 0, 0.05, 0)
-selectedLabel.Position = UDim2.new(0.25, 0, 0.02, 0)
-selectedLabel.TextScaled = true
-selectedLabel.Text = "Selected Item: None"
-selectedLabel.BackgroundTransparency = 1
-selectedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-selectedLabel.Parent = frame
+---------------------------------------------------------------------
+-- Helper: create a single button for an item and wire its click
+---------------------------------------------------------------------
+local function createItemButton(item, tint)
+    local button = Instance.new("TextButton")
+    button.Name              = item.Name
+    button.Size              = UDim2.new(1, 0, 0, 28)
+    button.BackgroundColor3  = tint
+    button.BorderSizePixel   = 0
+    button.Text              = item.Name
+    button.TextScaled        = true
+    button.TextColor3        = Color3.fromRGB(255, 255, 255)
+    button.Parent            = ItemsFrame
 
--- TextBox for player name
-local nameBox = Instance.new("TextBox")
-nameBox.PlaceholderText = "Player Name"
-nameBox.Size = UDim2.new(0.25, 0, 0.05, 0)
-nameBox.Position = UDim2.new(0.25, 0, 0.1, 0)
-nameBox.Text = ""
-nameBox.TextScaled = true
-nameBox.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-nameBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-nameBox.Parent = frame
-
--- TextBox for amount
-local amountBox = Instance.new("TextBox")
-amountBox.PlaceholderText = "Amount"
-amountBox.Size = UDim2.new(0.1, 0, 0.05, 0)
-amountBox.Position = UDim2.new(0.51, 0, 0.1, 0)
-amountBox.Text = ""
-amountBox.TextScaled = true
-amountBox.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-amountBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-amountBox.Parent = frame
-
--- Spawn Button
-local spawnButton = Instance.new("TextButton")
-spawnButton.Text = "Spawn Item"
-spawnButton.Size = UDim2.new(0.2, 0, 0.05, 0)
-spawnButton.Position = UDim2.new(0.25, 0, 0.17, 0)
-spawnButton.TextScaled = true
-spawnButton.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
-spawnButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-spawnButton.Parent = frame
-
--- Template for item buttons
-local itemButtonTemplate = Instance.new("TextButton")
-itemButtonTemplate.Size = UDim2.new(1, 0, 0, 30)
-itemButtonTemplate.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-itemButtonTemplate.TextScaled = true
-itemButtonTemplate.TextColor3 = Color3.fromRGB(255, 255, 255)
-itemButtonTemplate.Visible = false
-itemButtonTemplate.Name = "ItemButtonTemplate"
-itemButtonTemplate.Parent = gui -- not visible until cloned
-
--- Dynamic Variables
-local selectedItem = nil
-
--- Function to populate item buttons
-local function spawnItems(folder, page)
-	local color = RarityColor.GetColor(folder.Name)
-	for _, item in ipairs(folder:GetChildren()) do
-		local button = itemButtonTemplate:Clone()
-		button.Name = item.Name
-		button.Text = item.Name
-		button.BackgroundColor3 = color
-		button.Visible = true
-		button.Parent = page
-
-		button.MouseButton1Click:Connect(function()
-			selectedItem = item
-			selectedLabel.Text = "Selected Item: " .. item.Name
-		end)
-	end
+    button.MouseButton1Click:Connect(function()
+        selectedItem = item
+        -- simple visual feedback: lighten the chosen button, reset others
+        for _, child in ipairs(ItemsFrame:GetChildren()) do
+            if child:IsA("TextButton") then
+                child.BackgroundTransparency = (child == button) and 0.3 or 0
+            end
+        end
+    end)
 end
 
--- Load loot folders and create UI pages
-local function loadAllItemFolders()
-	local lootFolders = Loot:GetChildren()
-
-	for _, folder in ipairs(lootFolders) do
-		local categoryButton = Instance.new("TextButton")
-		categoryButton.Size = UDim2.new(1, 0, 0, 30)
-		categoryButton.Text = folder.Name
-		categoryButton.TextScaled = true
-		categoryButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-		categoryButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-		categoryButton.Parent = folderList
-
-		-- Create page for items
-		local itemFrame = Instance.new("ScrollingFrame")
-		itemFrame.Size = UDim2.new(0.75, 0, 0.8, 0)
-		itemFrame.Position = UDim2.new(0.22, 0, 0.25, 0)
-		itemFrame.CanvasSize = UDim2.new(0, 0, 5, 0)
-		itemFrame.ScrollBarThickness = 6
-		itemFrame.Visible = false
-		itemFrame.Name = folder.Name
-		itemFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-		itemFrame.Parent = itemPages
-
-		categoryButton.MouseButton1Click:Connect(function()
-			for _, child in ipairs(itemPages:GetChildren()) do
-				if child:IsA("ScrollingFrame") then
-					child.Visible = false
-				end
-			end
-			itemFrame.Visible = true
-		end)
-
-		if folder.Name == "Limited Time" then
-			spawnItems(folder, itemFrame)
-		else
-			for _, category in ipairs(folder:GetChildren()) do
-				for _, subfolder in ipairs(category:GetChildren()) do
-					spawnItems(subfolder, itemFrame)
-				end
-			end
-		end
-	end
+---------------------------------------------------------------------
+-- Recursive folder walk to find every leaf “item” and make a button
+---------------------------------------------------------------------
+local function populateFromFolder(folder)
+    for _, child in ipairs(folder:GetChildren()) do
+        if #child:GetChildren() == 0 then
+            -- Treat empty/numeric leaf parts as spawnable items
+            createItemButton(child, RarityColor.GetColor(folder.Name))
+        else
+            -- Go deeper (handles categories, sub‑categories, etc.)
+            populateFromFolder(child)
+        end
+    end
 end
 
--- Handle spawn
-spawnButton.MouseButton1Click:Connect(function()
-	if not selectedItem then return end
+---------------------------------------------------------------------
+-- Build UI list once at start‑up
+---------------------------------------------------------------------
+populateFromFolder(LootRoot)
 
-	local playerName = nameBox.Text
-	local amount = tonumber(amountBox.Text) or 1
-	if playerName == "" or amount < 1 then return end
+---------------------------------------------------------------------
+-- Handle Spawn button
+---------------------------------------------------------------------
+SpawnButton.MouseButton1Click:Connect(function()
+    if not selectedItem then
+        warn("No item selected.")
+        return
+    end
 
-	local target = Players:FindFirstChild(playerName)
-	if not target then return end
-
-	SpawnItemRemote:FireServer(selectedItem, target, amount)
+    -- Amount hard‑coded to 1 (change if you later add an Amount textbox)
+    SpawnRemote:FireServer(selectedItem, LocalPlayer, 1)
 end)
-
--- Load items
-loadAllItemFolders()

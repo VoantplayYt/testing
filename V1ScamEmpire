@@ -14,6 +14,7 @@ local SelectedItem = nil
 
 local function spawnItems(folder)
 	print("Spawning items in:", folder.Name)
+	local color = RarityColor.GetColor(folder.Name)
 	local categoryFolder = AdminGui.Frame.Items:FindFirstChild(folder.Name)
 	if not categoryFolder then
 		warn("No UI frame found for:", folder.Name)
@@ -25,7 +26,7 @@ local function spawnItems(folder)
 		local template = AdminGui.Frame.Items.Template:Clone()
 		template.Name = item.Name
 		template.Text = item.Name
-		template.BackgroundColor3 = Color3.fromRGB(255,255,255)
+		template.BackgroundColor3 = color
 		template.Visible = true
 		template.Parent = categoryFolder
 
@@ -71,17 +72,37 @@ end
 
 -- Spawn item button
 AdminGui.Frame.TextButton.MouseButton1Click:Connect(function()
-    if SelectedItem then
-        local playerName = AdminGui.Frame.TextBox.Text
-        if playerName and Players:FindFirstChild(playerName) then
-            local player = Players:FindFirstChild(playerName)
-            local amountText = AdminGui.Frame.Amount.Text
-            local amount = tonumber(amountText)
-            if not amount then
-                amount = 1
-            end
+	print("🔘 Spawn Button Clicked!")
 
-            ReplicatedStorage.Events.admincommands.SpawnItem:FireServer(SelectedItem, player, amount)
-        end
-    end
+	if not SelectedItem then
+		warn("⚠️ No item selected to spawn.")
+		return
+	end
+	print("📦 Selected item to spawn:", SelectedItem.Name)
+
+	local playerName = AdminGui.Frame.TextBox.Text
+	if not playerName or playerName == "" then
+		warn("⚠️ No player name entered.")
+		return
+	end
+	print("🎯 Target player name:", playerName)
+
+	local targetPlayer = Players:FindFirstChild(playerName)
+	if not targetPlayer then
+		warn("🚫 Player not found:", playerName)
+		return
+	end
+	print("✅ Found target player:", targetPlayer.Name)
+
+	local amountText = AdminGui.Frame.Amount.Text
+	local amount = tonumber(amountText)
+	if not amount or amount <= 0 then
+		warn("⚠️ Invalid amount, defaulting to 1.")
+		amount = 1
+	end
+	print("🔢 Amount to spawn:", amount)
+
+	-- Final call to server
+	print("📤 Firing remote event to server...")
+	ReplicatedStorage.Events.admincommands.SpawnItem:FireServer(SelectedItem, targetPlayer, amount)
 end)

@@ -4,15 +4,9 @@ local LocalPlayer = Players.LocalPlayer
 
 -- Wait for PlayerGui and the Admin GUI
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-local AdminGui = PlayerGui:WaitForChild("AdminCommands") -- rename if yours is different
+local AdminGui = PlayerGui:WaitForChild("Admin") -- rename if yours is different
 
--- Only allow access to specific users
-if LocalPlayer.Name ~= "UmmmOkayWhat" and LocalPlayer.Name ~= "Snatcharelli" then
-    AdminGui.Enabled = true
-else
-    AdminGui:Destroy()
-    return
-end
+AdminGui.Enabled = true
 
 local RarityColor = require(ReplicatedStorage.Modules.RarityColor)
 local SelectedItemName = nil

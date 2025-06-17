@@ -4,7 +4,7 @@ local LocalPlayer = Players.LocalPlayer
 --amelia faith flood
 -- Wait for PlayerGui and the Admin GUI
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-local AdminGui = PlayerGui:WaitForChild("Admin") -- rename if yours is different
+local AdminGui = PlayerGui:WaitForChild("AdminLL") -- rename if yours is different
 
 AdminGui.Enabled = true
 

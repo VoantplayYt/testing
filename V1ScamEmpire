@@ -1,7 +1,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
---amelia faith howard
+--amelia faith flood
 -- Wait for PlayerGui and the Admin GUI
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local AdminGui = PlayerGui:WaitForChild("Admin") -- rename if yours is different
@@ -53,7 +53,7 @@ loadAllFolders()
 for _, button in pairs(AdminGui.Frame.ScrollingFrame:GetChildren()) do
     if button:IsA("TextButton") then
         button.MouseButton1Click:Connect(function()
-            local itemsFrame = AdminGui.Frame.Items:FindFirstChild(SelectedItemName)
+            local itemsFrame = AdminGui.Frame.Items:FindFirstChild(button.Name)
             if itemsFrame then
                 for _, child in pairs(AdminGui.Frame.Items:GetChildren()) do
                     if child:IsA("ScrollingFrame") then
@@ -61,6 +61,8 @@ for _, button in pairs(AdminGui.Frame.ScrollingFrame:GetChildren()) do
                     end
                 end
                 itemsFrame.Visible = true
+            else
+                warn("No items frame found for tab:", button.Name)
             end
         end)
     end

@@ -4,7 +4,7 @@ local LocalPlayer = Players.LocalPlayer
 --amelia faith flood
 -- Wait for PlayerGui and the Admin GUI
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-local AdminGui = PlayerGui:WaitForChild("AdminLP") -- rename if yours is different
+local AdminGui = PlayerGui:WaitForChild("Austin") -- rename if yours is different
 
 AdminGui.Enabled = true
 
@@ -38,18 +38,15 @@ local function spawnItems(folder)
 end
 
 local function loadAllFolders()
-    for _, folder in pairs(ReplicatedStorage.Loot:GetChildren()) do
-        if folder.Name == "Limited Time" then
-            spawnItems(folder)
-        else
-            for _, subfolder in pairs(folder:GetChildren()) do
-                for _, subsubfolder in pairs(subfolder:GetChildren()) do
-                    spawnItems(subsubfolder)
-                end
-            end
-        end
-    end
+	for _, folder in pairs(ReplicatedStorage.Loot:GetChildren()) do
+		if folder:IsA("Folder") then
+			spawnItems(folder)
+		else
+			warn("Skipping non-folder:", folder.Name)
+		end
+	end
 end
+
 
 loadAllFolders()
 

@@ -19,7 +19,7 @@ local function spawnItems(folder)
         local template = AdminGui.Frame.Items.Template:Clone()
         template.Name = item.Name
         template.Text = item.Name
-        template.BackgroundColor3 = color
+        template.BackgroundColor3 = Color3.fromRGB(255,255,255)
 
         local categoryFolder = AdminGui.Frame.Items:FindFirstChild(folder.Name)
         template.Parent = categoryFolder

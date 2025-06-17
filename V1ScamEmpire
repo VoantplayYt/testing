@@ -4,7 +4,7 @@ local LocalPlayer = Players.LocalPlayer
 --amelia faith flood
 -- Wait for PlayerGui and the Admin GUI
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-local AdminGui = PlayerGui:WaitForChild("AdminLL") -- rename if yours is different
+local AdminGui = PlayerGui:WaitForChild("AdminLP") -- rename if yours is different
 
 AdminGui.Enabled = true
 
@@ -13,24 +13,28 @@ local SelectedItemName = nil
 local SelectedItem = nil
 
 local function spawnItems(folder)
-    local color = RarityColor.GetColor(folder.Name)
+	print("Spawning items in:", folder.Name)
+	local categoryFolder = AdminGui.Frame.Items:FindFirstChild(folder.Name)
+	if not categoryFolder then
+		warn("No UI frame found for:", folder.Name)
+		return
+	end
 
-    for _, item in pairs(folder:GetChildren()) do
-        local template = AdminGui.Frame.Items.Template:Clone()
-        template.Name = item.Name
-        template.Text = item.Name
-        template.BackgroundColor3 = Color3.fromRGB(255,255,255)
+	for _, item in pairs(folder:GetChildren()) do
+		print("  - Creating button for:", item.Name)
+		local template = AdminGui.Frame.Items.Template:Clone()
+		template.Name = item.Name
+		template.Text = item.Name
+		template.BackgroundColor3 = Color3.fromRGB(255,255,255)
+		template.Visible = true
+		template.Parent = categoryFolder
 
-        local categoryFolder = AdminGui.Frame.Items:FindFirstChild(folder.Name)
-        template.Parent = categoryFolder
-        template.Visible = true
-
-        template.MouseButton1Click:Connect(function()
-            AdminGui.Frame.SelectedItem.Text = item.Name
-            SelectedItemName = item.Name
-            SelectedItem = item
-        end)
-    end
+		template.MouseButton1Click:Connect(function()
+			AdminGui.Frame.SelectedItem.Text = item.Name
+			SelectedItemName = item.Name
+			SelectedItem = item
+		end)
+	end
 end
 
 local function loadAllFolders()
